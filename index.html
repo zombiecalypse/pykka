@@ -1,121 +1,240 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
-    <title>jodal/pykka @ GitHub</title>
-
-    <style type="text/css">
-      body {
-        background: white;
-        color: black;
-        font-family: "Helvetica,Arial,FreeSans";
-        margin-top: 1.0em;
-      }
-      #container {
-        margin: 0 auto;
-        width: 700px;
-      }
-      h1 {
-        font-size: 3.8em;
-        margin-bottom: 3px;
-      }
-      h1 .small {
-        font-size: 0.4em;
-      }
-      h1 a {
-        text-decoration: none;
-      }
-      h2 {
-        font-size: 1.5em;
-      }
-      h3 {
-        text-align: center;
-      }
-      a {
-        color: #32aa69;
-      }
-      .description {
-        font-size: 1.2em;
-        font-style: italic;
-        margin-bottom: 30px;
-        margin-top: 30px;
-      }
-      .download {
-        float: right;
-      }
-      pre {
-        background: black;
-        color: white;
-        padding: 15px;
-      }
-      hr {
-        border: 0;
-        border-bottom: 1px solid #aaa;
-        width: 80%;
-      }
-      .footer {
-        font-style: italic;
-        padding-top: 30px;
-        text-align: center;
-      }
-    </style>
-
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pykka &mdash; Pykka v0.3 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/print.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/theme_extras.js"></script>
+    <link rel="top" title="Pykka v0.3 documentation" href="#" /> 
   </head>
-
   <body>
-    <a href="http://github.com/jodal/pykka"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+      <div class="header"><h1 class="heading"><a href="#">
+          <span>Pykka v0.3 documentation</span></a></h1>
+        <h2 class="heading"><span>Pykka</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        </p>
 
-    <div id="container">
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="pykka">
+<h1>Pykka<a class="headerlink" href="#pykka" title="Permalink to this headline">¶</a></h1>
+<p>Pykka is a concurrency abstraction which makes actors look like regular
+objects.</p>
+<p>It lets you call methods on an actor like you would on a regular object, but it
+runs the code in the actor&#8217;s own thread. Similarily, when you access the
+actor&#8217;s fields, they are read in the actor&#8217;s thread, serialized and copied to
+the reading thread.</p>
+<p>Both method calling and attribute reads returns futures which ensures that the
+calling thread does not block before the value from the object&#8217;s thread is
+actually used.</p>
+<p>Pykka is similar to typed actors in the Akka framework.</p>
+<div class="section" id="what-can-it-do">
+<h2>What can it do?<a class="headerlink" href="#what-can-it-do" title="Permalink to this headline">¶</a></h2>
+<p>Given the following code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pykka</span> <span class="kn">import</span> <span class="n">Actor</span>
 
-      <div class="download">
-        <a href="http://github.com/jodal/pykka/zipball/master">
-          <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-        <a href="http://github.com/jodal/pykka/tarball/master">
-          <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+<span class="k">class</span> <span class="nc">Adder</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="k">class</span> <span class="nc">Counter</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">count_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">target</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">other</span><span class="o">.</span><span class="n">add_one</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">adder</span> <span class="o">=</span> <span class="n">Adder</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">adder</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">counter</span><span class="o">.</span><span class="n">count_to</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+    <span class="n">counter</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+    <span class="n">adder</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We get the following output:</p>
+<div class="highlight-python"><pre>$ PYTHONPATH=. python examples/counter.py
+Thread-2: 0
+Thread-1: 1
+Thread-2: 2
+Thread-1: 3
+Thread-2: 4
+Thread-1: 5
+Thread-2: 6
+Thread-1: 7
+Thread-2: 8
+Thread-1: 9</pre>
+</div>
+<p>See the <tt class="docutils literal"><span class="pre">examples/</span></tt> dir for more runnable examples.</p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>Pykka is licensed under the Apache License, Version 2.0. See <tt class="docutils literal"><span class="pre">LICENSE</span></tt> for
+the full license text.</p>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Python 2.6 or 2.7</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>To install Pykka you can use pip:</p>
+<div class="highlight-python"><pre>pip install pykka</pre>
+</div>
+<p>To upgrade your Pykka installation to the latest released version:</p>
+<div class="highlight-python"><pre>pip install --upgrade pykka</pre>
+</div>
+</div>
+</div>
+<div class="section" id="module-pykka">
+<span id="pykka-api"></span><h1>Pykka API<a class="headerlink" href="#module-pykka" title="Permalink to this headline">¶</a></h1>
+<p>Pykka is a concurrency abstraction which makes actors look like regular
+objects.</p>
+<p>See <a class="reference external" href="https://github.com/jodal/pykka">https://github.com/jodal/pykka</a> for more information.</p>
+<dl class="class">
+<dt id="pykka.Actor">
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">Actor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pykka/#Actor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A concurrently running actor.</p>
+<p>To create an actor:</p>
+<ol class="arabic simple">
+<li>subclass <a class="reference internal" href="#pykka.Actor" title="pykka.Actor"><tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt></a>,</li>
+<li>implement your methods as usual,</li>
+<li>instantiate the actor as usual,</li>
+<li>call <tt class="xref py py-meth docutils literal"><span class="pre">Actor.start()</span></tt> on the actor instance.</li>
+</ol>
+<p>To stop an actor, call <a class="reference internal" href="#pykka.Actor.stop" title="pykka.Actor.stop"><tt class="xref py py-meth docutils literal"><span class="pre">Actor.stop()</span></tt></a>.</p>
+<dl class="method">
+<dt id="pykka.Actor.get_attributes">
+<tt class="descname">get_attributes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/#Actor.get_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Actor.get_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dict where the keys are all the available attributes and
+the value is whether the attribute is callable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.Actor.react">
+<tt class="descname">react</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/pykka/#Actor.react"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Actor.react" title="Permalink to this definition">¶</a></dt>
+<dd><p>May be implemented for the actor to handle custom messages.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.Actor.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/#Actor.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Actor.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the actor and terminate its thread.</p>
+<p>The actor will not stop until it is done processing the current
+message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pykka.ActorProxy">
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">ActorProxy</tt><big>(</big><em>actor</em><big>)</big><a class="reference internal" href="_modules/pykka/#ActorProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.ActorProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Proxy for a running actor which allows the actor to be used through a
+normal method calls and field accesses.</p>
+<p>You should never need to create <a class="reference internal" href="#pykka.ActorProxy" title="pykka.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> instances yourself.</p>
+<dl class="method">
+<dt id="pykka.ActorProxy.send">
+<tt class="descname">send</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/pykka/#ActorProxy.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.ActorProxy.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send message to actor.</p>
+<p>The message must be a picklable dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pykka.CallableProxy">
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">CallableProxy</tt><big>(</big><em>actor_inbox</em>, <em>attribute</em><big>)</big><a class="reference internal" href="_modules/pykka/#CallableProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.CallableProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper class for proxying callables.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pykka.Future">
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">Future</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/pykka/#Future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Future" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="#pykka.Future" title="pykka.Future"><tt class="xref py py-class docutils literal"><span class="pre">Future</span></tt></a> is a handle to a value which will be available in the
+future.</p>
+<p>Typically returned by calls to actor methods or accesses to actor fields.</p>
+<p>To get hold of the encapsulated value, call <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt></a>.</p>
+<dl class="method">
+<dt id="pykka.Future.get">
+<tt class="descname">get</tt><big>(</big><em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/#Future.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Future.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value encapsulated by the future.</p>
+<p>Will block until the value is available, unless the optional <em>timeout</em>
+argument is set to:</p>
+<ul class="simple">
+<li><tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> &#8211; block forever (default)</li>
+<li><tt class="xref py py-class xref docutils literal"><span class="pre">False</span></tt> &#8211; return immediately</li>
+<li>numeric &#8211; timeout after given number of seconds</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.Future.wait">
+<tt class="descname">wait</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.Future.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value encapsulated by the future.</p>
+<p>Will block until the value is available, unless the optional <em>timeout</em>
+argument is set to:</p>
+<ul class="simple">
+<li><tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> &#8211; block forever (default)</li>
+<li><tt class="xref py py-class xref docutils literal"><span class="pre">False</span></tt> &#8211; return immediately</li>
+<li>numeric &#8211; timeout after given number of seconds</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pykka.pickle_connection">
+<tt class="descclassname">pykka.</tt><tt class="descname">pickle_connection</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/pykka/#pickle_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.pickle_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pickles a connection object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pykka.unpickle_connection">
+<tt class="descclassname">pykka.</tt><tt class="descname">unpickle_connection</tt><big>(</big><em>pickled_connection</em><big>)</big><a class="reference internal" href="_modules/pykka/#unpickle_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.unpickle_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpickles a connection object</p>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        </p>
+
       </div>
 
-      <h1>
-        <a href="http://github.com/jodal/pykka">Pykka</a>
-        <span class="small">
-          by <a href="http://github.com/jodal">jodal</a>
-        </span>
-      </h1>
-
-      <div class="description">
-        Pykka is a concurrency abstraction which makes actors look like regular objects
-      </div>
-
-      <h2>Dependencies</h2>
-      <p>Python 2.6 or 2.7</p>
-
-      <h2>Install</h2>
-      <pre>$ pip install pykka</pre>
-
-      <h2>License</h2>
-      <p>Apache License, Version 2.0</p>
-
-      <h2>Authors</h2>
-      <p>Stein Magnus Jodal (stein.magnus@jodal.no)</p>
-
-      <h2>Download</h2>
-      <p>
-      You can download this project in either
-      <a href="http://github.com/jodal/pykka/zipball/master">zip</a> or
-      <a href="http://github.com/jodal/pykka/tarball/master">tar</a> formats.
-      </p>
-      <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/jodal/pykka</pre>
-      </p>
-
-      <div class="footer">
-        get the source code on GitHub : <a href="http://github.com/jodal/pykka">jodal/pykka</a>
-      </div>
-
+    <div class="footer">
+        &copy; Copyright 2010, Stein Magnus Jodal.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
-
   </body>
 </html>

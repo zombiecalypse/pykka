@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pykka &mdash; Pykka v0.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/print.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/theme_extras.js"></script>
+    <link rel="top" title="Pykka v0.3 documentation" href="../../" />
+    <link rel="up" title="Module code" href="../" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="../../">
+          <span>Pykka v0.3 documentation</span></a></h1>
+        <h2 class="heading"><span>pykka</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        <a class="uplink" href="../../">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for pykka</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Pykka is a concurrency abstraction which makes actors look like regular</span>
+<span class="sd">objects.</span>
+
+<span class="sd">See https://github.com/jodal/pykka for more information.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Pipe</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.dummy</span> <span class="kn">import</span> <span class="n">Process</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.reduction</span> <span class="kn">import</span> <span class="n">reduce_connection</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<div class="viewcode-block" id="pickle_connection"><a class="viewcode-back" href="../../#pykka.pickle_connection">[docs]</a><span class="k">def</span> <span class="nf">pickle_connection</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pickles a connection object&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">reduce_connection</span><span class="p">(</span><span class="n">connection</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="unpickle_connection"><a class="viewcode-back" href="../../#pykka.unpickle_connection">[docs]</a><span class="k">def</span> <span class="nf">unpickle_connection</span><span class="p">(</span><span class="n">pickled_connection</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unpickles a connection object&quot;&quot;&quot;</span>
+    <span class="c"># From http://stackoverflow.com/questions/1446004</span>
+    <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">pickled_connection</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+</div>
+<span class="k">class</span> <span class="nc">ActorRegistry</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">_actors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_actors_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">cls</span><span class="o">.</span><span class="n">_actors_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">_actors</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">actor</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">cls</span><span class="o">.</span><span class="n">_actors_lock</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">_actors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">actor</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">unregister</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">actor</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">cls</span><span class="o">.</span><span class="n">_actors_lock</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">_actors</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">actor</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Actor"><a class="viewcode-back" href="../../#pykka.Actor">[docs]</a><span class="k">class</span> <span class="nc">Actor</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A concurrently running actor.</span>
+
+<span class="sd">    To create an actor:</span>
+
+<span class="sd">    1. subclass :class:`Actor`,</span>
+<span class="sd">    2. implement your methods as usual,</span>
+<span class="sd">    3. instantiate the actor as usual,</span>
+<span class="sd">    4. call :meth:`Actor.start()` on the actor instance.</span>
+
+<span class="sd">    To stop an actor, call :meth:`Actor.stop()`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Actor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runnable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inbox</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Actor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span> <span class="o">=</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">ActorRegistry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span>
+
+<div class="viewcode-block" id="Actor.stop"><a class="viewcode-back" href="../../#pykka.Actor.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the actor and terminate its thread.</span>
+
+<span class="sd">        The actor will not stop until it is done processing the current</span>
+<span class="sd">        message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runnable</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">ActorRegistry</span><span class="o">.</span><span class="n">unregister</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">runnable</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_event_loop</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_event_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The actor&#39;s event loop which is called continously to handle</span>
+<span class="sd">        incoming messages, one at the time.&quot;&quot;&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inbox</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s">&#39;reply_to&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="n">unpickle_connection</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reacts to messages sent to the actor.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;command&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;call&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">])(</span>
+                <span class="o">*</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;args&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;kwargs&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;command&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;read&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;command&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;write&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">],</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Actor.react"><a class="viewcode-back" href="../../#pykka.Actor.react">[docs]</a>    <span class="k">def</span> <span class="nf">react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;May be implemented for the actor to handle custom messages.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="Actor.get_attributes"><a class="viewcode-back" href="../../#pykka.Actor.get_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">get_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a dict where the keys are all the available attributes and</span>
+<span class="sd">        the value is whether the attribute is callable.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+</div></div>
+<div class="viewcode-block" id="ActorProxy"><a class="viewcode-back" href="../../#pykka.ActorProxy">[docs]</a><span class="k">class</span> <span class="nc">ActorProxy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Proxy for a running actor which allows the actor to be used through a</span>
+<span class="sd">    normal method calls and field accesses.</span>
+
+<span class="sd">    You should never need to create :class:`ActorProxy` instances yourself.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_name</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_inbox</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">inbox</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_attributes</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ActorProxy.send"><a class="viewcode-back" href="../../#pykka.ActorProxy.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send message to actor.</span>
+
+<span class="sd">        The message must be a picklable dict.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_inbox</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_attributes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_actor_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_attributes</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;proxy for &#39;</span><span class="si">%s</span><span class="s">&#39; object has no &quot;</span>
+                    <span class="s">&quot;attribute &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actor_name</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_attributes</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">CallableProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actor_inbox</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_field</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a field from the actor.&quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">read_end</span><span class="p">,</span> <span class="n">write_end</span><span class="p">)</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">duplex</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;read&#39;</span><span class="p">,</span>
+            <span class="s">&#39;attribute&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;reply_to&#39;</span><span class="p">:</span> <span class="n">pickle_connection</span><span class="p">(</span><span class="n">write_end</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_inbox</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Future</span><span class="p">(</span><span class="n">read_end</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a field on the actor.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ActorProxy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">read_end</span><span class="p">,</span> <span class="n">write_end</span><span class="p">)</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">duplex</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;write&#39;</span><span class="p">,</span>
+            <span class="s">&#39;attribute&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+            <span class="s">&#39;reply_to&#39;</span><span class="p">:</span> <span class="n">pickle_connection</span><span class="p">(</span><span class="n">write_end</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_inbox</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Future</span><span class="p">(</span><span class="n">read_end</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;__class__&#39;</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CallableProxy"><a class="viewcode-back" href="../../#pykka.CallableProxy">[docs]</a><span class="k">class</span> <span class="nc">CallableProxy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper class for proxying callables.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actor_inbox</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_inbox</span> <span class="o">=</span> <span class="n">actor_inbox</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attribute</span> <span class="o">=</span> <span class="n">attribute</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">read_end</span><span class="p">,</span> <span class="n">write_end</span><span class="p">)</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">duplex</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;call&#39;</span><span class="p">,</span>
+            <span class="s">&#39;attribute&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attribute</span><span class="p">,</span>
+            <span class="s">&#39;args&#39;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>
+            <span class="s">&#39;kwargs&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span>
+            <span class="s">&#39;reply_to&#39;</span><span class="p">:</span> <span class="n">pickle_connection</span><span class="p">(</span><span class="n">write_end</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_inbox</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Future</span><span class="p">(</span><span class="n">read_end</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Future"><a class="viewcode-back" href="../../#pykka.Future">[docs]</a><span class="k">class</span> <span class="nc">Future</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A :class:`Future` is a handle to a value which will be available in the</span>
+<span class="sd">    future.</span>
+
+<span class="sd">    Typically returned by calls to actor methods or accesses to actor fields.</span>
+
+<span class="sd">    To get hold of the encapsulated value, call :meth:`Future.get()`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+
+<div class="viewcode-block" id="Future.get"><a class="viewcode-back" href="../../#pykka.Future.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the value encapsulated by the future.</span>
+
+<span class="sd">        Will block until the value is available, unless the optional *timeout*</span>
+<span class="sd">        argument is set to:</span>
+
+<span class="sd">        - :class:`None` -- block forever (default)</span>
+<span class="sd">        - :class:`False` -- return immediately</span>
+<span class="sd">        - numeric -- timeout after given number of seconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="n">poll_args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">poll_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">timeout</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="o">*</span><span class="n">poll_args</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+</div>
+    <span class="n">wait</span> <span class="o">=</span> <span class="n">get</span></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        <a class="uplink" href="../../">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2010, Stein Magnus Jodal.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
+    </div>
+  </body>
+</html>
