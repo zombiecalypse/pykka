@@ -7,14 +7,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka &mdash; Pykka v0.3 documentation</title>
+    <title>Pykka &mdash; Pykka v0.4 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/print.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.3',
+        VERSION:     '0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -24,11 +24,11 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/theme_extras.js"></script>
-    <link rel="top" title="Pykka v0.3 documentation" href="#" /> 
+    <link rel="top" title="Pykka v0.4 documentation" href="#" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="#">
-          <span>Pykka v0.3 documentation</span></a></h1>
+          <span>Pykka v0.4 documentation</span></a></h1>
         <h2 class="heading"><span>Pykka</span></h2>
       </div>
       <div class="topnav">
@@ -165,21 +165,6 @@ message.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="pykka.ActorProxy">
-<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">ActorProxy</tt><big>(</big><em>actor</em><big>)</big><a class="reference internal" href="_modules/pykka/#ActorProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.ActorProxy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Proxy for a running actor which allows the actor to be used through a
-normal method calls and field accesses.</p>
-<p>You should never need to create <a class="reference internal" href="#pykka.ActorProxy" title="pykka.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> instances yourself.</p>
-<dl class="method">
-<dt id="pykka.ActorProxy.send">
-<tt class="descname">send</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/pykka/#ActorProxy.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.ActorProxy.send" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send message to actor.</p>
-<p>The message must be a picklable dict.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="pykka.ActorRegistry">
 <em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">ActorRegistry</tt><a class="reference internal" href="_modules/pykka/#ActorRegistry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.ActorRegistry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registry which provides easy access to all running actors.</p>
@@ -226,47 +211,11 @@ block until they have stopped if you need to.</p>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="pykka.CallableProxy">
-<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">CallableProxy</tt><big>(</big><em>actor_inbox</em>, <em>attribute</em><big>)</big><a class="reference internal" href="_modules/pykka/#CallableProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.CallableProxy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper class for proxying callables.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="pykka.Future">
-<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">Future</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/pykka/#Future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Future" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <a class="reference internal" href="#pykka.Future" title="pykka.Future"><tt class="xref py py-class docutils literal"><span class="pre">Future</span></tt></a> is a handle to a value which will be available in the
-future.</p>
-<p>Typically returned by calls to actor methods or accesses to actor fields.</p>
-<p>To get hold of the encapsulated value, call <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt></a>.</p>
-<dl class="method">
-<dt id="pykka.Future.get">
-<tt class="descname">get</tt><big>(</big><em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/#Future.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Future.get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the value encapsulated by the future.</p>
-<p>Will block until the value is available, unless the optional <em>timeout</em>
-argument is set to:</p>
-<ul class="simple">
-<li><tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> &#8211; block forever (default)</li>
-<li><tt class="xref py py-class xref docutils literal"><span class="pre">False</span></tt> &#8211; return immediately</li>
-<li>numeric &#8211; timeout after given number of seconds</li>
-</ul>
-</dd></dl>
-
-<dl class="method">
-<dt id="pykka.Future.wait">
-<tt class="descname">wait</tt><big>(</big><em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/#Future.wait"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Future.wait" title="Permalink to this definition">¶</a></dt>
-<dd><p>Block until the future is available.</p>
-<p>An alias for <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">get()</span></tt></a>, but with a name that is more describing if
-you do not care about the return value.</p>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="function">
 <dt id="pykka.get_all">
 <tt class="descclassname">pykka.</tt><tt class="descname">get_all</tt><big>(</big><em>futures</em>, <em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/#get_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.get_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all the values encapsulated by the given features.</p>
-<p><tt class="xref py py-attr docutils literal"><span class="pre">timeout</span></tt> has the same behaviour as for <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt></a>.</p>
+<p><tt class="xref py py-attr docutils literal"><span class="pre">timeout</span></tt> has the same behaviour as for <tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -291,7 +240,7 @@ you do not care about the return values.</p>
 
     <div class="footer">
         &copy; Copyright 2010, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>
