@@ -52,7 +52,7 @@ the reading thread.</p>
 <p>Both method calling and attribute reads returns futures which ensures that the
 calling thread does not block before the value from the object&#8217;s thread is
 actually used.</p>
-<p>The goal of Pykka is to provide a convenient to use concurrency abstractions
+<p>The goal of Pykka is to provide a convenient to use concurrency abstraction
 for Python. If you need raw performance, look somewhere else.</p>
 <div class="section" id="what-can-it-do">
 <h2>What can it do?<a class="headerlink" href="#what-can-it-do" title="Permalink to this headline">¶</a></h2>
@@ -276,7 +276,7 @@ you do not care about the return value.</p>
 <dl class="function">
 <dt id="pykka.get_all">
 <tt class="descclassname">pykka.</tt><tt class="descname">get_all</tt><big>(</big><em>futures</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.get_all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all the values encapsulated by the given features.</p>
+<dd><p>Get all the values encapsulated by the given futures.</p>
 <p><tt class="xref py py-attr docutils literal"><span class="pre">timeout</span></tt> has the same behaviour as for <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt></a>.</p>
 </dd></dl>
 
@@ -302,7 +302,7 @@ you do not care about the return values.</p>
 
     <div class="footer">
         &copy; Copyright 2010, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>
