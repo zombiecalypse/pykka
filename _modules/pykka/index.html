@@ -7,14 +7,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka &mdash; Pykka v0.5 documentation</title>
+    <title>pykka &mdash; Pykka v0.6 documentation</title>
     <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/print.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5',
+        VERSION:     '0.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -24,12 +24,12 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../_static/theme_extras.js"></script>
-    <link rel="top" title="Pykka v0.5 documentation" href="../../" />
+    <link rel="top" title="Pykka v0.6 documentation" href="../../" />
     <link rel="up" title="Module code" href="../" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="../../">
-          <span>Pykka v0.5 documentation</span></a></h1>
+          <span>Pykka v0.6 documentation</span></a></h1>
         <h2 class="heading"><span>pykka</span></h2>
       </div>
       <div class="topnav">
@@ -43,23 +43,45 @@
         
         
   <h1>Source code for pykka</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">gevent.monkey</span>
+<span class="n">gevent</span><span class="o">.</span><span class="n">monkey</span><span class="o">.</span><span class="n">patch_all</span><span class="p">()</span>
+
 <span class="kn">from</span> <span class="nn">pykka.actor</span> <span class="kn">import</span> <span class="n">Actor</span>
-<span class="kn">from</span> <span class="nn">pykka.future</span> <span class="kn">import</span> <span class="n">Future</span><span class="p">,</span> <span class="n">get_all</span><span class="p">,</span> <span class="n">wait_all</span>
 <span class="kn">from</span> <span class="nn">pykka.proxy</span> <span class="kn">import</span> <span class="n">ActorProxy</span><span class="p">,</span> <span class="n">CallableProxy</span>
+<span class="kn">from</span> <span class="nn">pykka.ref</span> <span class="kn">import</span> <span class="n">ActorRef</span>
 <span class="kn">from</span> <span class="nn">pykka.registry</span> <span class="kn">import</span> <span class="n">ActorRegistry</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Actor&#39;</span><span class="p">,</span> <span class="s">&#39;ActorProxy&#39;</span><span class="p">,</span> <span class="s">&#39;ActorRegistry&#39;</span><span class="p">,</span> <span class="s">&#39;CallableProxy&#39;</span><span class="p">,</span> <span class="s">&#39;Future&#39;</span><span class="p">,</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Actor&#39;</span><span class="p">,</span> <span class="s">&#39;ActorProxy&#39;</span><span class="p">,</span> <span class="s">&#39;ActorRef&#39;</span><span class="p">,</span> <span class="s">&#39;ActorRegistry&#39;</span><span class="p">,</span> <span class="s">&#39;CallableProxy&#39;</span><span class="p">,</span>
     <span class="s">&#39;get_all&#39;</span><span class="p">,</span> <span class="s">&#39;wait_all&#39;</span><span class="p">]</span>
 
 
-<span class="n">VERSION</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">VERSION</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">get_version</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns a formatted version number&quot;&quot;&quot;</span>
     <span class="n">version</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">VERSION</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">VERSION</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">VERSION</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">version</span>
+
+<div class="viewcode-block" id="get_all"><a class="viewcode-back" href="../../#pykka.get_all">[docs]</a><span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get all values encapsulated in the list of</span>
+<span class="sd">    :class:`gevent.event.AsyncResult`.</span>
+
+<span class="sd">    :attr:`timeout` has the same behaviour as for :meth:`Future.get`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">result</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">),</span> <span class="n">results</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="wait_all"><a class="viewcode-back" href="../../#pykka.wait_all">[docs]</a><span class="k">def</span> <span class="nf">wait_all</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Block until all :class:`gevent.event.AsyncResult` in the list are avaiable.</span>
+
+<span class="sd">    An alias for :func:`get_all`, but with a name that is more describing if</span>
+<span class="sd">    you do not care about the return values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">get_all</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div>
 </pre></div>
 
       </div>

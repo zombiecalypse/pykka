@@ -7,14 +7,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka &mdash; Pykka v0.5 documentation</title>
+    <title>Pykka &mdash; Pykka v0.6 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/print.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5',
+        VERSION:     '0.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -24,11 +24,11 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/theme_extras.js"></script>
-    <link rel="top" title="Pykka v0.5 documentation" href="#" /> 
+    <link rel="top" title="Pykka v0.6 documentation" href="#" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="#">
-          <span>Pykka v0.5 documentation</span></a></h1>
+          <span>Pykka v0.6 documentation</span></a></h1>
         <h2 class="heading"><span>Pykka</span></h2>
       </div>
       <div class="topnav">
@@ -43,57 +43,105 @@
         
   <div class="section" id="pykka">
 <h1>Pykka<a class="headerlink" href="#pykka" title="Permalink to this headline">¶</a></h1>
-<p>Pykka is a concurrency abstraction which let you use concurrent actors like
-regular objects.</p>
-<p>Pykka let you call methods on an actor like you would on a regular object, but
-it runs the code in the actor&#8217;s own thread. Similarily, when you access the
-actor&#8217;s fields, they are read in the actor&#8217;s thread, serialized and copied to
-the reading thread.</p>
-<p>Both method calling and attribute reads returns futures which ensures that the
-calling thread does not block before the value from the object&#8217;s thread is
-actually used.</p>
-<p>The goal of Pykka is to provide a convenient to use concurrency abstraction
-for Python. If you need raw performance, look somewhere else.</p>
-<div class="section" id="what-can-it-do">
-<h2>What can it do?<a class="headerlink" href="#what-can-it-do" title="Permalink to this headline">¶</a></h2>
-<p>Given the following code:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pykka</span> <span class="kn">import</span> <span class="n">Actor</span>
+<p>Pykka implements the actor model for concurrent programming on top of the
+<a class="reference external" href="http://www.gevent.org/">gevent</a> library, which again is based on greenlet
+and libevent.</p>
+<p>The goal of Pykka is to provide easy to use concurrency abstraction for Python.
+And since Pykka is built on gevent, the performance should be quite all right
+too.</p>
+<div class="section" id="regular-actors">
+<h2>Regular actors<a class="headerlink" href="#regular-actors" title="Permalink to this headline">¶</a></h2>
+<p>Regular actors get all incoming messages delivered to <tt class="xref py py-meth docutils literal"><span class="pre">Actor.react()</span></tt>.
+This method can decide what action is needed in response to the message. The
+messages are expected to be Python dictionaries, containing anything that can
+be serialized.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#! /usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">pykka</span> <span class="kn">import</span> <span class="n">Actor</span>
+
+<span class="k">class</span> <span class="nc">PlainActor</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stored_messages</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;print&#39;</span><span class="p">:</span>
+            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">stored_messages</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stored_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">actor</span> <span class="o">=</span> <span class="n">PlainActor</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">actor</span><span class="o">.</span><span class="n">send_one_way</span><span class="p">({</span><span class="s">&#39;no&#39;</span><span class="p">:</span> <span class="s">&#39;Norway&#39;</span><span class="p">,</span> <span class="s">&#39;se&#39;</span><span class="p">:</span> <span class="s">&#39;Sweden&#39;</span><span class="p">})</span>
+    <span class="n">actor</span><span class="o">.</span><span class="n">send_one_way</span><span class="p">({</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+    <span class="n">actor</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">({</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;print&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>We get the following output:</p>
+<div class="highlight-python"><pre>$ PYTHONPATH=. examples/plain_actor.py
+[{'se': 'Sweden', 'no': 'Norway'}, {'a': 3, 'c': 5, 'b': 4}]</pre>
+</div>
+</div>
+<div class="section" id="proxy-actors">
+<h2>Proxy actors<a class="headerlink" href="#proxy-actors" title="Permalink to this headline">¶</a></h2>
+<p>If you wrap a plain actor in an <tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt>, Pykka let you call methods
+on the actor like you would on a regular object, but it runs the code in the
+actor. Similarly, when you access the actor&#8217;s fields, they are read in the
+actor, serialized and copied to the reader.</p>
+<p>Both method calling and attribute reads immediately returns future objects.
+This means that your code can continue while the result is calculated in some
+other actor, and that you&#8217;re code will not block until you actually use the
+returned value.</p>
+<p>Here is a small example of two actors wrapped in <tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt> objects.
+They seemingly communicate with each other by calling regular methods, but,
+under the hood, the calls are serialized and sent the other actor while the
+first actor can continue executing.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#! /usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">pykka</span> <span class="kn">import</span> <span class="n">Actor</span><span class="p">,</span> <span class="n">ActorProxy</span>
 
 <span class="k">class</span> <span class="nc">Adder</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-        <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> is increasing </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
 
-<span class="k">class</span> <span class="nc">Counter</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Bookkeeper</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adder</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adder</span> <span class="o">=</span> <span class="n">adder</span>
 
     <span class="k">def</span> <span class="nf">count_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">target</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adder</span><span class="o">.</span><span class="n">add_one</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adder</span><span class="o">.</span><span class="n">add_one</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> got </span><span class="si">%d</span><span class="s"> back&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">adder</span> <span class="o">=</span> <span class="n">Adder</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-    <span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">adder</span><span class="p">)</span>
-    <span class="n">counter</span><span class="o">.</span><span class="n">count_to</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-    <span class="n">counter</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-    <span class="n">adder</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+    <span class="n">adder</span> <span class="o">=</span> <span class="n">Adder</span><span class="o">.</span><span class="n">start_proxy</span><span class="p">()</span>
+    <span class="n">bookkeeper</span> <span class="o">=</span> <span class="n">Bookkeeper</span><span class="o">.</span><span class="n">start_proxy</span><span class="p">(</span><span class="n">adder</span><span class="p">)</span>
+    <span class="n">bookkeeper</span><span class="o">.</span><span class="n">count_to</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>We get the following output:</p>
-<div class="highlight-python"><pre>$ PYTHONPATH=. python examples/counter.py
-Thread-2: 0
-Thread-1: 1
-Thread-2: 2
-Thread-1: 3
-Thread-2: 4
-Thread-1: 5
-Thread-2: 6
-Thread-1: 7
-Thread-2: 8
-Thread-1: 9</pre>
+<div class="highlight-python"><pre>$ PYTHONPATH=. examples/counter.py
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 0
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 1 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 1
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 2 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 2
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 3 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 3
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 4 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 4
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 5 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 5
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 6 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 6
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 7 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 7
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 8 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 8
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 9 back
+Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 9
+Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 10 back</pre>
 </div>
 <p>See the <tt class="docutils literal"><span class="pre">examples/</span></tt> dir for more runnable examples.</p>
 </div>
@@ -102,12 +150,13 @@ Thread-1: 9</pre>
 <p>Pykka is licensed under the Apache License, Version 2.0. See <tt class="docutils literal"><span class="pre">LICENSE</span></tt> for
 the full license text.</p>
 </div>
-<div class="section" id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>Python 2.6 or 2.7</p>
-</div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Install Pykka&#8217;s dependencies:</p>
+<ul class="simple">
+<li>Python 2.6 or 2.7</li>
+<li><a class="reference external" href="http://www.gevent.org/">gevent</a></li>
+</ul>
 <p>To install Pykka you can use pip:</p>
 <div class="highlight-python"><pre>pip install pykka</pre>
 </div>
@@ -132,23 +181,34 @@ the full license text.</p>
 <span id="pykka-api"></span><h1>Pykka API<a class="headerlink" href="#module-pykka" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pykka.Actor">
-<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">Actor</tt><big>(</big><em>group=None</em>, <em>target=None</em>, <em>name=None</em>, <em>args=()</em>, <em>kwargs={}</em><big>)</big><a class="headerlink" href="#pykka.Actor" title="Permalink to this definition">¶</a></dt>
-<dd><p>A concurrently running actor.</p>
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">Actor</tt><a class="headerlink" href="#pykka.Actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>An actor has the following characteristics:</p>
+<ul class="simple">
+<li>It does not share state with anybody else.</li>
+<li>It can have its own state.</li>
+<li>It can only communicate with other actors by sending and receiving
+messages.</li>
+<li>It can only send messages to actors whose address it has.</li>
+<li>When an actor receives a message it may take actions like:<ul>
+<li>altering its own state, e.g. so that it can react differently to a
+future message,</li>
+<li>sending messages to other actors, or</li>
+<li>starting new actors.</li>
+</ul>
+</li>
+<li>None of the actions are required, and they may be applied in any order.</li>
+<li>It only processes one message at a time. In other words, a single actor
+does not give you any concurrency, and it does not need to use e.g. locks
+to protect its own state.</li>
+</ul>
 <p>To create an actor:</p>
 <ol class="arabic simple">
 <li>subclass <a class="reference internal" href="#pykka.Actor" title="pykka.Actor"><tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt></a>,</li>
-<li>implement your methods, including <cite>__init__()</cite>, as usual,</li>
-<li>call <a class="reference internal" href="#pykka.Actor.start" title="pykka.Actor.start"><tt class="xref py py-meth docutils literal"><span class="pre">Actor.start()</span></tt></a> on the actor class, passing the method any
+<li>implement your methods, including <tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt>, as usual,</li>
+<li>call <tt class="xref py py-meth docutils literal"><span class="pre">Actor.start(...)()</span></tt> on the actor class, passing the method any
 arguments for your constructor.</li>
 </ol>
 <p>To stop an actor, call <a class="reference internal" href="#pykka.Actor.stop" title="pykka.Actor.stop"><tt class="xref py py-meth docutils literal"><span class="pre">Actor.stop()</span></tt></a>.</p>
-<dl class="method">
-<dt id="pykka.Actor.get_attributes">
-<tt class="descname">get_attributes</tt><big>(</big><big>)</big><a class="headerlink" href="#pykka.Actor.get_attributes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dict where the keys are all the available attributes and
-the value is whether the attribute is callable.</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="pykka.Actor.react">
 <tt class="descname">react</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#pykka.Actor.react" title="Permalink to this definition">¶</a></dt>
@@ -158,34 +218,85 @@ the value is whether the attribute is callable.</p>
 <dl class="classmethod">
 <dt id="pykka.Actor.start">
 <em class="property">classmethod </em><tt class="descname">start</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pykka.Actor.start" title="Permalink to this definition">¶</a></dt>
-<dd><p>Start the actor in its own thread and register it in the
-<a class="reference internal" href="#pykka.ActorRegistry" title="pykka.ActorRegistry"><tt class="xref py py-class docutils literal"><span class="pre">ActorRegistry</span></tt></a>.</p>
-<p>Pass any arguments for the class constructor to this method instead.</p>
-<p>Returns a <a class="reference internal" href="#pykka.ActorProxy" title="pykka.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> which can be used to access the actor in
-a safe manner.</p>
+<dd><p>Start an actor and register it in the <a class="reference internal" href="#pykka.ActorRegistry" title="pykka.ActorRegistry"><tt class="xref py py-class docutils literal"><span class="pre">ActorRegistry</span></tt></a>.</p>
+<p>Any arguments passed to <a class="reference internal" href="#pykka.Actor.start" title="pykka.Actor.start"><tt class="xref py py-meth docutils literal"><span class="pre">start()</span></tt></a> will be passed on to the class
+constructor.</p>
+<p>Returns a <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> which can be used to access the actor in a
+safe manner.</p>
+<p>Behind the scenes, the following is happening when you call
+<a class="reference internal" href="#pykka.Actor.start" title="pykka.Actor.start"><tt class="xref py py-meth docutils literal"><span class="pre">start()</span></tt></a>:</p>
+<div class="highlight-python"><pre>Actor.start()
+    Actor.__new__()
+        Greenlet.__new__()
+        Greenlet.__init__()
+        UUID assignment
+        Inbox creation
+        ActorRef creation
+    Actor.__init__()        # Your code can run here
+    Greenlet.start()
+    ActorRegistry.register()</pre>
+</div>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pykka.Actor.start_proxy">
+<em class="property">classmethod </em><tt class="descname">start_proxy</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pykka.Actor.start_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just like <a class="reference internal" href="#pykka.Actor.start" title="pykka.Actor.start"><tt class="xref py py-meth docutils literal"><span class="pre">start()</span></tt></a>, but wraps the returned <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> in an
+<a class="reference internal" href="#pykka.ActorProxy" title="pykka.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pykka.Actor.stop">
 <tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#pykka.Actor.stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stop the actor and terminate its thread.</p>
-<p>The actor will not stop until it is done processing the current
-message.</p>
+<dd><p>Stop the actor.</p>
+<p>The actor will finish processing any messages already in its queue
+before stopping. It may not be restarted.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="pykka.ActorProxy">
-<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">ActorProxy</tt><big>(</big><em>actor</em><big>)</big><a class="headerlink" href="#pykka.ActorProxy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Proxy for a running actor which allows the actor to be used through a
-normal method calls and field accesses.</p>
-<p>You should never need to create <a class="reference internal" href="#pykka.ActorProxy" title="pykka.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> instances yourself.</p>
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">ActorProxy</tt><big>(</big><em>actor_ref</em><big>)</big><a class="headerlink" href="#pykka.ActorProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#pykka.ActorProxy" title="pykka.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> wraps an <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a>. The proxy allows the
+referenced actor to be used through a normal method calls and field
+access.</p>
+<p>You can create an <a class="reference internal" href="#pykka.ActorProxy" title="pykka.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> from any <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">actor_proxy</span> <span class="o">=</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="n">actor_ref</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="pykka.ActorRef">
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">ActorRef</tt><big>(</big><em>actor</em><big>)</big><a class="headerlink" href="#pykka.ActorRef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference to a running actor which may safely be passed around.</p>
+<p>You should never need to create <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> instances yourself.
+<a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> instances are returned by <a class="reference internal" href="#pykka.Actor.start" title="pykka.Actor.start"><tt class="xref py py-meth docutils literal"><span class="pre">Actor.start()</span></tt></a> and the
+lookup methods in <a class="reference internal" href="#pykka.ActorRegistry" title="pykka.ActorRegistry"><tt class="xref py py-class docutils literal"><span class="pre">ActorRegistry</span></tt></a>.</p>
 <dl class="method">
-<dt id="pykka.ActorProxy.send">
-<tt class="descname">send</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#pykka.ActorProxy.send" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send message to actor.</p>
+<dt id="pykka.ActorRef.send_one_way">
+<tt class="descname">send_one_way</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#pykka.ActorRef.send_one_way" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send message to actor without waiting for any response.</p>
 <p>The message must be a picklable dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.ActorRef.send_request_reply">
+<tt class="descname">send_request_reply</tt><big>(</big><em>message</em>, <em>block=True</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.ActorRef.send_request_reply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send message to actor and wait for the reply.</p>
+<p>If <tt class="docutils literal"><span class="pre">block</span></tt> is <tt class="xref py py-class xref docutils literal"><span class="pre">False</span></tt>, it will immediately return a
+<tt class="xref py py-class docutils literal"><span class="pre">gevent.event.AsyncResult</span></tt> instead of blocking.</p>
+<p>If <tt class="docutils literal"><span class="pre">block</span></tt> is <tt class="xref py py-class xref docutils literal"><span class="pre">True</span></tt>, the timeout should be given in seconds
+as a floating point number. By default, there is no timeout and it will
+wait for an reply forever.</p>
+<p>The message must be a picklable dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.ActorRef.stop">
+<tt class="descname">stop</tt><big>(</big><em>block=True</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.ActorRef.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a message to the actor, asking it to stop.</p>
 </dd></dl>
 
 </dd></dl>
@@ -198,92 +309,75 @@ normal method calls and field accesses.</p>
 <dl class="classmethod">
 <dt id="pykka.ActorRegistry.get_all">
 <em class="property">classmethod </em><tt class="descname">get_all</tt><big>(</big><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.get_all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all running actors</p>
+<dd><p>Get <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> for all running actors</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="pykka.ActorRegistry.get_by_class">
 <em class="property">classmethod </em><tt class="descname">get_by_class</tt><big>(</big><em>actor_class</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.get_by_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all running actors of the given class</p>
+<dd><p>Get <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> for all running actors of the given class</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="pykka.ActorRegistry.get_by_class_name">
 <em class="property">classmethod </em><tt class="descname">get_by_class_name</tt><big>(</big><em>actor_class_name</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.get_by_class_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all running actors of the given class name</p>
+<dd><p>Get <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> for all running actors of the given class
+name</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pykka.ActorRegistry.get_by_urn">
+<em class="property">classmethod </em><tt class="descname">get_by_urn</tt><big>(</big><em>actor_urn</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.get_by_urn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an actor by its universally unique URN.</p>
+<p>Returns <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> if no matching actor is found.</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="pykka.ActorRegistry.register">
-<em class="property">classmethod </em><tt class="descname">register</tt><big>(</big><em>actor</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.register" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register an actor in the registry.</p>
-<p>This is done automatically when an actor is started.</p>
+<em class="property">classmethod </em><tt class="descname">register</tt><big>(</big><em>actor_ref</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register an <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> in the registry.</p>
+<p>This is done automatically when an actor is started, e.g. by calling
+<a class="reference internal" href="#pykka.Actor.start" title="pykka.Actor.start"><tt class="xref py py-meth docutils literal"><span class="pre">Actor.start()</span></tt></a>.</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="pykka.ActorRegistry.stop_all">
-<em class="property">classmethod </em><tt class="descname">stop_all</tt><big>(</big><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.stop_all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stops all running actors.</p>
-<p>Returns a list of futures for all the stopping actors, so that you can
-block until they have stopped if you need to.</p>
+<em class="property">classmethod </em><tt class="descname">stop_all</tt><big>(</big><em>block=True</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.stop_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop all running actors.</p>
+<p>If <tt class="docutils literal"><span class="pre">block</span></tt> is <tt class="xref py py-class xref docutils literal"><span class="pre">True</span></tt>, it blocks forever or, if not
+<tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>, until <tt class="docutils literal"><span class="pre">timeout</span></tt> seconds has passed.</p>
+<p>If <tt class="docutils literal"><span class="pre">block</span></tt> is False, it returns a list with a future for each stop
+action.</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="pykka.ActorRegistry.unregister">
-<em class="property">classmethod </em><tt class="descname">unregister</tt><big>(</big><em>actor</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.unregister" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove an actor from the registry.</p>
-<p>This is done automatically when an actor is stopped.</p>
+<em class="property">classmethod </em><tt class="descname">unregister</tt><big>(</big><em>actor_ref</em><big>)</big><a class="headerlink" href="#pykka.ActorRegistry.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove an <a class="reference internal" href="#pykka.ActorRef" title="pykka.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> from the registry.</p>
+<p>This is done automatically when an actor is stopped, e.g. by calling
+<a class="reference internal" href="#pykka.Actor.stop" title="pykka.Actor.stop"><tt class="xref py py-meth docutils literal"><span class="pre">Actor.stop()</span></tt></a>.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="pykka.CallableProxy">
-<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">CallableProxy</tt><big>(</big><em>actor_inbox</em>, <em>attribute</em><big>)</big><a class="headerlink" href="#pykka.CallableProxy" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">CallableProxy</tt><big>(</big><em>ref</em>, <em>attribute</em><big>)</big><a class="headerlink" href="#pykka.CallableProxy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper class for proxying callables.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="pykka.Future">
-<em class="property">class </em><tt class="descclassname">pykka.</tt><tt class="descname">Future</tt><big>(</big><em>connection</em><big>)</big><a class="headerlink" href="#pykka.Future" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <a class="reference internal" href="#pykka.Future" title="pykka.Future"><tt class="xref py py-class docutils literal"><span class="pre">Future</span></tt></a> is a handle to a value which will be available in the
-future.</p>
-<p>Typically returned by calls to actor methods or accesses to actor fields.</p>
-<p>To get hold of the encapsulated value, call <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt></a>.</p>
-<dl class="method">
-<dt id="pykka.Future.get">
-<tt class="descname">get</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.Future.get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the value encapsulated by the future.</p>
-<p>Will block until the value is available, unless the optional <em>timeout</em>
-argument is set to:</p>
-<ul class="simple">
-<li><tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> &#8211; block forever (default)</li>
-<li><tt class="xref py py-class xref docutils literal"><span class="pre">False</span></tt> &#8211; return immediately</li>
-<li>numeric &#8211; timeout after given number of seconds</li>
-</ul>
-</dd></dl>
-
-<dl class="method">
-<dt id="pykka.Future.wait">
-<tt class="descname">wait</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.Future.wait" title="Permalink to this definition">¶</a></dt>
-<dd><p>Block until the future is available.</p>
-<p>An alias for <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">get()</span></tt></a>, but with a name that is more describing if
-you do not care about the return value.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="function">
 <dt id="pykka.get_all">
-<tt class="descclassname">pykka.</tt><tt class="descname">get_all</tt><big>(</big><em>futures</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.get_all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all the values encapsulated by the given futures.</p>
-<p><tt class="xref py py-attr docutils literal"><span class="pre">timeout</span></tt> has the same behaviour as for <a class="reference internal" href="#pykka.Future.get" title="pykka.Future.get"><tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt></a>.</p>
+<tt class="descclassname">pykka.</tt><tt class="descname">get_all</tt><big>(</big><em>results</em>, <em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/#get_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.get_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all values encapsulated in the list of
+<tt class="xref py py-class docutils literal"><span class="pre">gevent.event.AsyncResult</span></tt>.</p>
+<p><tt class="xref py py-attr docutils literal"><span class="pre">timeout</span></tt> has the same behaviour as for <tt class="xref py py-meth docutils literal"><span class="pre">Future.get()</span></tt>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pykka.wait_all">
-<tt class="descclassname">pykka.</tt><tt class="descname">wait_all</tt><big>(</big><em>futures</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#pykka.wait_all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Block until all the given features are available.</p>
+<tt class="descclassname">pykka.</tt><tt class="descname">wait_all</tt><big>(</big><em>results</em>, <em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/#wait_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.wait_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Block until all <tt class="xref py py-class docutils literal"><span class="pre">gevent.event.AsyncResult</span></tt> in the list are avaiable.</p>
 <p>An alias for <a class="reference internal" href="#pykka.get_all" title="pykka.get_all"><tt class="xref py py-func docutils literal"><span class="pre">get_all()</span></tt></a>, but with a name that is more describing if
 you do not care about the return values.</p>
 </dd></dl>
