@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pykka.actor &mdash; Pykka v0.7 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Pykka v0.7 documentation" href="../../../" />
+    <link rel="up" title="pykka" href="../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">Pykka v0.7 documentation</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li>
+          <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pykka.actor</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">gevent</span>
+<span class="kn">import</span> <span class="nn">gevent.event</span>
+<span class="kn">import</span> <span class="nn">gevent.queue</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">pykka.proxy</span> <span class="kn">import</span> <span class="n">ActorProxy</span>
+<span class="kn">from</span> <span class="nn">pykka.registry</span> <span class="kn">import</span> <span class="n">ActorRegistry</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;pykka&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Actor"><a class="viewcode-back" href="../../../#pykka.actor.Actor">[docs]</a><span class="k">class</span> <span class="nc">Actor</span><span class="p">(</span><span class="n">gevent</span><span class="o">.</span><span class="n">Greenlet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    To create an actor:</span>
+
+<span class="sd">    1. subclass :class:`Actor`,</span>
+<span class="sd">    2. implement your methods, including :meth:`__init__`, as usual,</span>
+<span class="sd">    3. call :meth:`Actor.start` on the actor class, passing the method any</span>
+<span class="sd">       arguments for your constructor.</span>
+
+<span class="sd">    To stop an actor, call :meth:`Actor.stop()` or :meth:`ActorRef.stop()`.</span>
+
+<span class="sd">    For example::</span>
+
+<span class="sd">        from pykka.actor import Actor</span>
+
+<span class="sd">        class MyActor(Actor):</span>
+<span class="sd">            def __init__(self, my_arg):</span>
+<span class="sd">                ... # my init code</span>
+
+<span class="sd">            def react(self, message):</span>
+<span class="sd">                ... # my react code for a plain actor</span>
+
+<span class="sd">            def a_method(self, ...):</span>
+<span class="sd">                ... # my regular method to be used through an ActorProxy</span>
+
+<span class="sd">        my_arg = ... # some value</span>
+<span class="sd">        my_actor_ref = MyActor.start(my_arg)</span>
+<span class="sd">        my_actor_ref.stop()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Actor.start"><a class="viewcode-back" href="../../../#pykka.actor.Actor.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start an actor and register it in the</span>
+<span class="sd">        :class:`pykka.registry.ActorRegistry`.</span>
+
+<span class="sd">        Any arguments passed to :meth:`start` will be passed on to the class</span>
+<span class="sd">        constructor.</span>
+
+<span class="sd">        Returns a :class:`ActorRef` which can be used to access the actor in a</span>
+<span class="sd">        safe manner.</span>
+
+<span class="sd">        Behind the scenes, the following is happening when you call</span>
+<span class="sd">        :meth:`start`::</span>
+
+<span class="sd">            Actor.start()</span>
+<span class="sd">                Actor.__new__()</span>
+<span class="sd">                    Greenlet.__new__()</span>
+<span class="sd">                    Greenlet.__init__()</span>
+<span class="sd">                    UUID assignment</span>
+<span class="sd">                    Inbox creation</span>
+<span class="sd">                    ActorRef creation</span>
+<span class="sd">                Actor.__init__()        # Your code can run here</span>
+<span class="sd">                Greenlet.start()</span>
+<span class="sd">                ActorRegistry.register()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">gevent</span><span class="o">.</span><span class="n">Greenlet</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">u&#39;Started </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+        <span class="n">ActorRegistry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">actor_ref</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">actor_ref</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Actor.start_proxy"><a class="viewcode-back" href="../../../#pykka.actor.Actor.start_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">start_proxy</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Just like :meth:`start`, but wraps the returned :class:`ActorRef` in an</span>
+<span class="sd">        :class:`ActorProxy`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+    <span class="c">#: The actor URN string is a universally unique identifier for the actor.</span>
+    <span class="c">#: It may be used for looking up a specific actor using</span>
+    <span class="c">#: :meth:`pykka.registry.ActorRegistry.get_by_urn`.</span></div>
+    <span class="n">actor_urn</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="c">#: The actors inbox. Use :meth:`ActorRef.send_one_way` and friends to put</span>
+    <span class="c">#: messages in the inbox.</span>
+    <span class="n">actor_inbox</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="c">#: The actor&#39;s :class:`ActorRef` instance.</span>
+    <span class="n">actor_ref</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="c">#: Wether or not the actor should continue processing messages. Use</span>
+    <span class="c">#: :meth:`stop` to change it.</span>
+    <span class="n">actor_runnable</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">gevent</span><span class="o">.</span><span class="n">Greenlet</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">gevent</span><span class="o">.</span><span class="n">Greenlet</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">actor_urn</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">urn</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">actor_inbox</span> <span class="o">=</span> <span class="n">gevent</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">actor_ref</span> <span class="o">=</span> <span class="n">ActorRef</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="c"># pylint: disable=W0231</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Your are free to override :meth:`__init__` and do any setup you need to</span>
+<span class="sd">        do. You should not call ``super(YourClass, self).__init__(...)``, as</span>
+<span class="sd">        that has already been done when your constructor is called.</span>
+
+<span class="sd">        When :meth:`__init__` is called, the internal fields</span>
+<span class="sd">        :attr:`actor_urn`, :attr:`actor_inbox`, and :attr:`actor_ref` are</span>
+<span class="sd">        already set, but the actor is not started or registered in</span>
+<span class="sd">        :class:`pykka.registry.ActorRegistry`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    <span class="c"># pylint: enable=W0231</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%(class)s</span><span class="s"> (</span><span class="si">%(urn)s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="s">&#39;urn&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_urn</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="Actor.stop"><a class="viewcode-back" href="../../../#pykka.actor.Actor.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the actor.</span>
+
+<span class="sd">        The actor will finish processing any messages already in its queue</span>
+<span class="sd">        before stopping. It may not be restarted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_runnable</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">ActorRegistry</span><span class="o">.</span><span class="n">unregister</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">u&#39;Stopped </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The Greenlet main method&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_runnable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_runnable</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_inbox</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s">&#39;reply_to&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reacts to messages sent to the actor.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_get_attributes&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_attributes</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_stop&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_call&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">])(</span>
+                <span class="o">*</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;args&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;kwargs&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_getattr&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_setattr&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">],</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Actor.react"><a class="viewcode-back" href="../../../#pykka.actor.Actor.react">[docs]</a>    <span class="k">def</span> <span class="nf">react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        May be implemented for the actor to handle non-proxy messages.</span>
+
+<span class="sd">        Messages where the value of the &#39;command&#39; key matches &#39;pykka_*&#39; are</span>
+<span class="sd">        reserved for internal use in Pykka.</span>
+
+<span class="sd">        :param message: the message to handle</span>
+<span class="sd">        :type message: picklable dict</span>
+
+<span class="sd">        :returns: anything that should be sent as a reply to the sender</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+    <span class="k">def</span> <span class="nf">_is_exposable_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns true for any attribute name that may be exposed through</span>
+<span class="sd">        :class:`ActorProxy`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gathers attribute information needed by :class:`ActorProxy`.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_exposable_attribute</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;callable&#39;</span><span class="p">:</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)),</span>
+                <span class="p">}</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="ActorRef"><a class="viewcode-back" href="../../../#pykka.actor.ActorRef">[docs]</a><span class="k">class</span> <span class="nc">ActorRef</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reference to a running actor which may safely be passed around.</span>
+
+<span class="sd">    :class:`ActorRef` instances are returned by :meth:`Actor.start` and the</span>
+<span class="sd">    lookup methods in :class:`pykka.registry.ActorRegistry`. You should never</span>
+<span class="sd">    need to create :class:`ActorRef` instances yourself.</span>
+
+<span class="sd">    :param actor: the actor to wrap</span>
+<span class="sd">    :type actor: :class:`Actor`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">#: See :attr:`Actor.actor_urn`</span>
+    <span class="n">actor_urn</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_urn</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">actor_urn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_class</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">__class__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_inbox</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">actor_inbox</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;&lt;ActorRef for </span><span class="si">%s</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%(class)s</span><span class="s"> (</span><span class="si">%(urn)s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s">&#39;urn&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_urn</span><span class="p">,</span>
+            <span class="s">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_class</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="ActorRef.send_one_way"><a class="viewcode-back" href="../../../#pykka.actor.ActorRef.send_one_way">[docs]</a>    <span class="k">def</span> <span class="nf">send_one_way</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send message to actor without waiting for any response.</span>
+
+<span class="sd">        Will generally not block, but if the underlying queue is full it will</span>
+<span class="sd">        block until a free slot is available.</span>
+
+<span class="sd">        :param message: message to send</span>
+<span class="sd">        :type message: picklable dict</span>
+
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_inbox</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ActorRef.send_request_reply"><a class="viewcode-back" href="../../../#pykka.actor.ActorRef.send_request_reply">[docs]</a>    <span class="k">def</span> <span class="nf">send_request_reply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send message to actor and wait for the reply.</span>
+
+<span class="sd">        The message must be a picklable dict.</span>
+<span class="sd">        If ``block`` is :class:`False`, it will immediately return a</span>
+<span class="sd">        :class:`gevent.event.AsyncResult` instead of blocking.</span>
+
+<span class="sd">        If ``block`` is :class:`True`, and ``timeout`` is :class:`None`, as</span>
+<span class="sd">        default, the method will block until it gets a reply, potentially</span>
+<span class="sd">        forever. If ``timeout`` is an integer or float, the method will wait</span>
+<span class="sd">        for a reply for ``timeout`` seconds, and then raise</span>
+<span class="sd">        :exc:`gevent.Timeout`.</span>
+
+<span class="sd">        :param message: message to send</span>
+<span class="sd">        :type message: picklable dict</span>
+
+<span class="sd">        :param block: whether to block while waiting for a reply</span>
+<span class="sd">        :type block: boolean</span>
+
+<span class="sd">        :param timeout: seconds to wait before timeout if blocking</span>
+<span class="sd">        :type timeout: float or :class:`None`</span>
+
+<span class="sd">        :return: :class:`gevent.event.AsyncResult` or response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">gevent</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">AsyncResult</span><span class="p">()</span>
+        <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reply</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_one_way</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">reply</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">reply</span>
+</div>
+<div class="viewcode-block" id="ActorRef.stop"><a class="viewcode-back" href="../../../#pykka.actor.ActorRef.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a message to the actor, asking it to stop.</span>
+
+<span class="sd">        ``block`` and ``timeout`` works as for :meth:`send_request_reply`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">({</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;pykka_stop&#39;</span><span class="p">},</span> <span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search/" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">Pykka v0.7 documentation</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li>
+          <li><a href="../" >pykka</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010-2011, Stein Magnus Jodal.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>
