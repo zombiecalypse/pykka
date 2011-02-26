@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.actor &mdash; Pykka v0.7 documentation</title>
+    <title>pykka.actor &mdash; Pykka v0.8 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.7',
+        VERSION:     '0.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.7 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.8 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.7 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.8 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -190,9 +190,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">actor_runnable</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_runnable</span><span class="p">:</span>
             <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_inbox</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s">&#39;reply_to&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
-                <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s">&#39;reply_to&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                    <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;reply_to&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                    <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reacts to messages sent to the actor.&quot;&quot;&quot;</span>
@@ -201,12 +205,16 @@
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_stop&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_call&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">])(</span>
-                <span class="o">*</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;args&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;kwargs&#39;</span><span class="p">])</span>
+            <span class="n">callee</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_attribute_from_path</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;attr_path&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">callee</span><span class="p">(</span><span class="o">*</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;args&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;kwargs&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_getattr&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">])</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_attribute_from_path</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s">&#39;attr_path&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">attr</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_setattr&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">],</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+            <span class="n">parent_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_attribute_from_path</span><span class="p">(</span>
+                <span class="n">message</span><span class="p">[</span><span class="s">&#39;attr_path&#39;</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">attr_name</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;attr_path&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">parent_attr</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Actor.react"><a class="viewcode-back" href="../../../#pykka.actor.Actor.react">[docs]</a>    <span class="k">def</span> <span class="nf">react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
@@ -223,21 +231,44 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </div>
-    <span class="k">def</span> <span class="nf">_is_exposable_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_is_exposable_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns true for any attribute name that may be exposed through</span>
 <span class="sd">        :class:`ActorProxy`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_is_traversable_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns true for any attribute that may be traversed from another</span>
+<span class="sd">        actor through :class:`ActorProxy`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="s">&#39;pykka_traversable&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_attribute_from_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Traverses the path and returns the attribute at the end of the path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">attr_path</span><span class="p">:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">attr</span>
 
     <span class="k">def</span> <span class="nf">_get_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gathers attribute information needed by :class:`ActorProxy`.&quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_exposable_attribute</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
-                <span class="n">result</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s">&#39;callable&#39;</span><span class="p">:</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)),</span>
+        <span class="n">attr_paths_to_visit</span> <span class="o">=</span> <span class="p">[[</span><span class="n">attr_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)]</span>
+        <span class="k">while</span> <span class="n">attr_paths_to_visit</span><span class="p">:</span>
+            <span class="n">attr_path</span> <span class="o">=</span> <span class="n">attr_paths_to_visit</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_exposable_attribute</span><span class="p">(</span><span class="n">attr_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_attribute_from_path</span><span class="p">(</span><span class="n">attr_path</span><span class="p">)</span>
+                <span class="n">result</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">attr_path</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;callable&#39;</span><span class="p">:</span> <span class="nb">callable</span><span class="p">(</span><span class="n">attr</span><span class="p">),</span>
+                    <span class="s">&#39;traversable&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_traversable_attribute</span><span class="p">(</span><span class="n">attr</span><span class="p">),</span>
                 <span class="p">}</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_traversable_attribute</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+                        <span class="n">attr_paths_to_visit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attr_path</span> <span class="o">+</span> <span class="p">[</span><span class="n">attr_name</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">result</span>
 
 </div>
@@ -357,14 +388,14 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.7 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.8 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>

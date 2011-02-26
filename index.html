@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka &mdash; Pykka v0.7 documentation</title>
+    <title>Pykka &mdash; Pykka v0.8 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.7',
+        VERSION:     '0.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.7 documentation" href="#" /> 
+    <link rel="top" title="Pykka v0.8 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.7 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.8 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -180,6 +180,26 @@ Adder (urn:uuid:35d5216f-332b-4c04-97bb-a02016ba4121) is increasing 9
 Bookkeeper (urn:uuid:fd8df21d-8a58-451b-a1b8-77bd19d868b8) got 10 back</pre>
 </div>
 <p>See the <tt class="docutils literal"><span class="pre">examples/</span></tt> dir for more runnable examples.</p>
+<div class="section" id="traversable-attributes">
+<h4>Traversable attributes<a class="headerlink" href="#traversable-attributes" title="Permalink to this headline">¶</a></h4>
+<p>Sometimes you don&#8217;t care about an actor&#8217;s attribute, but you want to access the
+attributes of the attribute, or call methods on the attribute. For this case,
+Pykka supports traversable attributes. By marking an actor attribute as
+traversable, Pykka will not return the attribute when accessed, but wrap it in
+a new <a class="reference internal" href="#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">pykka.proxy.ActorProxy</span></tt></a>. When the wrapped attribute is used,
+Pykka will get/set attributes or call methods on the actor attribute, just as
+it normally would on the actor, if wrapped in an actor proxy.</p>
+<p>To mark an attribute as traversable, simply add the <tt class="xref py py-attr docutils literal"><span class="pre">pykka_traversable</span></tt>
+to it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">AnActor</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
+    <span class="n">an_attribute</span> <span class="o">=</span> <span class="n">SomeOtherObject</span><span class="p">()</span>
+    <span class="n">an_attribute</span><span class="o">.</span><span class="n">pykka_traversable</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>You can mark the attributes of attributes of the actor as traversable, and so
+on, as long as all objects in the path from the actor to the deepest nested
+attribute is marked as traversable.</p>
+</div>
 </div>
 </div>
 <div class="section" id="installation">
@@ -465,7 +485,7 @@ for a reply for <tt class="docutils literal"><span class="pre">timeout</span></t
 <span id="pykka-proxy"></span><h2>pykka.proxy<a class="headerlink" href="#module-pykka.proxy" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pykka.proxy.ActorProxy">
-<em class="property">class </em><tt class="descclassname">pykka.proxy.</tt><tt class="descname">ActorProxy</tt><big>(</big><em>actor_ref</em><big>)</big><a class="reference internal" href="_modules/pykka/proxy/#ActorProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.proxy.ActorProxy" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pykka.proxy.</tt><tt class="descname">ActorProxy</tt><big>(</big><em>actor_ref</em>, <em>attr_path=None</em><big>)</big><a class="reference internal" href="_modules/pykka/proxy/#ActorProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.proxy.ActorProxy" title="Permalink to this definition">¶</a></dt>
 <dd><p>An <a class="reference internal" href="#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> wraps an <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>. The proxy
 allows the referenced actor to be used through a normal method calls and
 field access.</p>
@@ -674,7 +694,10 @@ If blocking, a list of return values from
 <li><a class="reference internal" href="#project-resources">Project resources</a></li>
 <li><a class="reference internal" href="#actors">Actors</a><ul>
 <li><a class="reference internal" href="#plain-actors">Plain actors</a></li>
-<li><a class="reference internal" href="#typed-actors">Typed actors</a></li>
+<li><a class="reference internal" href="#typed-actors">Typed actors</a><ul>
+<li><a class="reference internal" href="#traversable-attributes">Traversable attributes</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
@@ -721,12 +744,12 @@ If blocking, a list of return values from
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.7 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.8 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>
