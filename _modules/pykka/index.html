@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka &mdash; Pykka v0.8 documentation</title>
+    <title>pykka &mdash; Pykka v0.9 documentation</title>
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8',
+        VERSION:     '0.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.8 documentation" href="../../" />
+    <link rel="top" title="Pykka v0.9 documentation" href="../../" />
     <link rel="up" title="Module code" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../">Pykka v0.8 documentation</a> &raquo;</li>
+        <li><a href="../../">Pykka v0.9 documentation</a> &raquo;</li>
           <li><a href="../" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -46,41 +46,12 @@
           <div class="body">
             
   <h1>Source code for pykka</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">gevent.monkey</span>
-<span class="n">gevent</span><span class="o">.</span><span class="n">monkey</span><span class="o">.</span><span class="n">patch_all</span><span class="p">()</span>
-
 <span class="c">#: Pykka&#39;s version as a tuple that can be used for comparison</span>
-<span class="n">VERSION</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="n">VERSION</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
 
 <div class="viewcode-block" id="get_version"><a class="viewcode-back" href="../../#pykka.get_version">[docs]</a><span class="k">def</span> <span class="nf">get_version</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Returns Pykka&#39;s version as a formatted string&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">))</span>
-</div>
-<div class="viewcode-block" id="get_all"><a class="viewcode-back" href="../../#pykka.get_all">[docs]</a><span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="n">futures</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Collect all values encapsulated in the list of futures.</span>
-
-<span class="sd">    If ``timeout`` is not :class:`None`, the method will wait for a reply for</span>
-<span class="sd">    ``timeout`` seconds, and then raise :exc:`gevent.Timeout`.</span>
-
-<span class="sd">    :param futures: futures for the results to collect</span>
-<span class="sd">    :type futures: list of `gevent.event.AsyncResult`</span>
-
-<span class="sd">    :param timeout: seconds to wait before timeout</span>
-<span class="sd">    :type timeout: float or :class:`None`</span>
-
-<span class="sd">    :returns: list of results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">future</span><span class="p">:</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">),</span> <span class="n">futures</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="wait_all"><a class="viewcode-back" href="../../#pykka.wait_all">[docs]</a><span class="k">def</span> <span class="nf">wait_all</span><span class="p">(</span><span class="n">futures</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wait for all futures in the results list are available.</span>
-
-<span class="sd">    This is an alias for :func:`get_all`, but with a name that is more</span>
-<span class="sd">    describing if you do not care about the return values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">get_all</span><span class="p">(</span><span class="n">futures</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">))</span></div>
 </pre></div>
 
           </div>
@@ -114,13 +85,13 @@
         <li class="right" >
           <a href="../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../">Pykka v0.8 documentation</a> &raquo;</li>
+        <li><a href="../../">Pykka v0.9 documentation</a> &raquo;</li>
           <li><a href="../" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>
