@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.actor &mdash; Pykka v0.9 documentation</title>
+    <title>pykka.actor &mdash; Pykka v0.9.1 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.9',
+        VERSION:     '0.9.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.9 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.9.1 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.9 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.9.1 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -204,14 +204,10 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_react</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="k">if</span> <span class="s">&#39;reply_to&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
-                    <span class="n">serialized_future</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span>
-                    <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_future_class</span><span class="o">.</span><span class="n">unserialize</span><span class="p">(</span><span class="n">serialized_future</span><span class="p">)</span>
-                    <span class="n">future</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+                    <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s">&#39;reply_to&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
-                    <span class="n">serialized_future</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span>
-                    <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_future_class</span><span class="o">.</span><span class="n">unserialize</span><span class="p">(</span><span class="n">serialized_future</span><span class="p">)</span>
-                    <span class="n">future</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+                    <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
     <span class="c"># pylint: enable = W0703</span>
 
     <span class="k">def</span> <span class="nf">_react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
@@ -384,7 +380,7 @@
 <span class="sd">        :return: :class:`pykka.future.Future` or response</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_future_class</span><span class="p">()</span>
-        <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+        <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">future</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">send_one_way</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">block</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
@@ -431,7 +427,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.9 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.9.1 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>
