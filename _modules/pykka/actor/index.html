@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.actor &mdash; Pykka v0.9.1 documentation</title>
+    <title>pykka.actor &mdash; Pykka v0.10 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.9.1',
+        VERSION:     '0.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.9.1 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.10 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.9.1 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.10 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -121,14 +121,6 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Started </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
         <span class="n">ActorRegistry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">actor_ref</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">actor_ref</span>
-</div>
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Actor.start_proxy"><a class="viewcode-back" href="../../../#pykka.actor.Actor.start_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">start_proxy</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Just like :meth:`start`, but wraps the returned :class:`ActorRef` in an</span>
-<span class="sd">        :class:`ActorProxy`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
     <span class="c">#: The actor URN string is a universally unique identifier for the actor.</span>
     <span class="c">#: It may be used for looking up a specific actor using</span>
@@ -198,6 +190,7 @@
 
 <span class="sd">        :class:`ThreadingActor` expects this method to be named :meth:`run`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_start</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">actor_runnable</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_runnable</span><span class="p">:</span>
             <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_inbox</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
@@ -210,6 +203,17 @@
                     <span class="n">message</span><span class="p">[</span><span class="s">&#39;reply_to&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
     <span class="c"># pylint: enable = W0703</span>
 
+<div class="viewcode-block" id="Actor.post_start"><a class="viewcode-back" href="../../../#pykka.actor.Actor.post_start">[docs]</a>    <span class="k">def</span> <span class="nf">post_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hook for doing any setup that should be done *after* the actor is</span>
+<span class="sd">        started, but *before* it starts processing messages.</span>
+
+<span class="sd">        For :class:`ThreadingActor`, this method is executed in the actor&#39;s own</span>
+<span class="sd">        thread, while :meth:`__init__` is executed in the thread that created</span>
+<span class="sd">        the actor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
     <span class="k">def</span> <span class="nf">_react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reacts to messages sent to the actor.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;pykka_get_attributes&#39;</span><span class="p">:</span>
@@ -393,7 +397,22 @@
 
 <span class="sd">        ``block`` and ``timeout`` works as for :meth:`send_request_reply`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">({</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;pykka_stop&#39;</span><span class="p">},</span> <span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">({</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;pykka_stop&#39;</span><span class="p">},</span> <span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ActorRef.proxy"><a class="viewcode-back" href="../../../#pykka.actor.ActorRef.proxy">[docs]</a>    <span class="k">def</span> <span class="nf">proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wraps the :class:`ActorRef` in an :class:`pykka.proxy.ActorProxy`.</span>
+
+<span class="sd">        Using this method like this::</span>
+
+<span class="sd">            ref = AnActor.start()</span>
+<span class="sd">            proxy = ActorProxy(ref)</span>
+
+<span class="sd">        is analogous to::</span>
+
+<span class="sd">            proxy = AnActor.start().proxy()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -427,14 +446,14 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.9.1 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.10 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>

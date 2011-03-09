@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka &mdash; Pykka v0.9.1 documentation</title>
+    <title>Pykka &mdash; Pykka v0.10 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.1',
+        VERSION:     '0.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.9.1 documentation" href="#" /> 
+    <link rel="top" title="Pykka v0.10 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.10 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -161,8 +161,8 @@ executing its own code.</p>
             <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> got </span><span class="si">%d</span><span class="s"> back&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">adder</span> <span class="o">=</span> <span class="n">Adder</span><span class="o">.</span><span class="n">start_proxy</span><span class="p">()</span>
-    <span class="n">bookkeeper</span> <span class="o">=</span> <span class="n">Bookkeeper</span><span class="o">.</span><span class="n">start_proxy</span><span class="p">(</span><span class="n">adder</span><span class="p">)</span>
+    <span class="n">adder</span> <span class="o">=</span> <span class="n">Adder</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="o">.</span><span class="n">proxy</span><span class="p">()</span>
+    <span class="n">bookkeeper</span> <span class="o">=</span> <span class="n">Bookkeeper</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">adder</span><span class="p">)</span><span class="o">.</span><span class="n">proxy</span><span class="p">()</span>
     <span class="n">bookkeeper</span><span class="o">.</span><span class="n">count_to</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
     <span class="n">ActorRegistry</span><span class="o">.</span><span class="n">stop_all</span><span class="p">()</span>
 </pre></div>
@@ -311,13 +311,6 @@ safe manner.</p>
 </div>
 </dd></dl>
 
-<dl class="classmethod">
-<dt id="pykka.actor.Actor.start_proxy">
-<em class="property">classmethod </em><tt class="descname">start_proxy</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.start_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.start_proxy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Just like <a class="reference internal" href="#pykka.actor.Actor.start" title="pykka.actor.Actor.start"><tt class="xref py py-meth docutils literal"><span class="pre">start()</span></tt></a>, but wraps the returned <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> in an
-<tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt>.</p>
-</dd></dl>
-
 <dl class="attribute">
 <dt id="pykka.actor.Actor.actor_urn">
 <tt class="descname">actor_urn</tt><a class="headerlink" href="#pykka.actor.Actor.actor_urn" title="Permalink to this definition">¶</a></dt>
@@ -355,6 +348,16 @@ before stopping. It may not be restarted.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pykka.actor.Actor.post_start">
+<tt class="descname">post_start</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.post_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.post_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for doing any setup that should be done <em>after</em> the actor is
+started, but <em>before</em> it starts processing messages.</p>
+<p>For <a class="reference internal" href="#pykka.actor.ThreadingActor" title="pykka.actor.ThreadingActor"><tt class="xref py py-class docutils literal"><span class="pre">ThreadingActor</span></tt></a>, this method is executed in the actor&#8217;s own
+thread, while <tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt> is executed in the thread that created
+the actor.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pykka.actor.Actor.react">
 <tt class="descname">react</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.react"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.react" title="Permalink to this definition">¶</a></dt>
 <dd><p>May be implemented for the actor to handle non-proxy messages.</p>
@@ -364,9 +367,13 @@ reserved for internal use in Pykka.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>picklable dict</em>) &#8211; the message to handle</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> (<em>picklable dict</em>) &#8211; the message to handle</li>
+</ul>
+</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">anything that should be sent as a reply to the sender</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">anything that should be sent as a reply to the sender</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -394,7 +401,10 @@ need to create <a class="reference internal" href="#pykka.actor.ActorRef" title=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor</strong> (<a class="reference internal" href="#pykka.actor.Actor" title="pykka.actor.Actor"><tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt></a>) &#8211; the actor to wrap</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actor</strong> (<a class="reference internal" href="#pykka.actor.Actor" title="pykka.actor.Actor"><tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt></a>) &#8211; the actor to wrap</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -414,9 +424,13 @@ block until a free slot is available.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>picklable dict</em>) &#8211; message to send</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> (<em>picklable dict</em>) &#8211; message to send</li>
+</ul>
+</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">nothing</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">nothing</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -457,6 +471,21 @@ for a reply for <tt class="docutils literal"><span class="pre">timeout</span></t
 <tt class="descname">stop</tt><big>(</big><em>block=True</em>, <em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#ActorRef.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.ActorRef.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a message to the actor, asking it to stop.</p>
 <p><tt class="docutils literal"><span class="pre">block</span></tt> and <tt class="docutils literal"><span class="pre">timeout</span></tt> works as for <a class="reference internal" href="#pykka.actor.ActorRef.send_request_reply" title="pykka.actor.ActorRef.send_request_reply"><tt class="xref py py-meth docutils literal"><span class="pre">send_request_reply()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.actor.ActorRef.proxy">
+<tt class="descname">proxy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/actor/#ActorRef.proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.ActorRef.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps the <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> in an <a class="reference internal" href="#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">pykka.proxy.ActorProxy</span></tt></a>.</p>
+<p>Using this method like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ref</span> <span class="o">=</span> <span class="n">AnActor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">proxy</span> <span class="o">=</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is analogous to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">proxy</span> <span class="o">=</span> <span class="n">AnActor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="o">.</span><span class="n">proxy</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -508,7 +537,10 @@ only block the first time the value is accessed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (any picklable object or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; the encapsulated value or nothing</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> (any picklable object or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; the encapsulated value or nothing</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -522,7 +554,10 @@ only block the first time the value is accessed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>exception</strong> (<em>exception</em>) &#8211; the encapsulated exception</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>exception</strong> (<em>exception</em>) &#8211; the encapsulated exception</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -596,8 +631,9 @@ field access.</p>
 <span class="n">actor_proxy</span> <span class="o">=</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="n">actor_ref</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You can also get an <a class="reference internal" href="#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> directly when starting the actor:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">actor_proxy</span> <span class="o">=</span> <span class="n">MyActor</span><span class="o">.</span><span class="n">start_proxy</span><span class="p">()</span>
+<p>You can also get an <a class="reference internal" href="#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">ActorProxy</span></tt></a> by using
+<a class="reference internal" href="#pykka.actor.ActorRef.proxy" title="pykka.actor.ActorRef.proxy"><tt class="xref py py-meth docutils literal"><span class="pre">pykka.actor.ActorRef.proxy()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">actor_proxy</span> <span class="o">=</span> <span class="n">MyActor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="o">.</span><span class="n">proxy</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>When reading an attribute or getting a return value from a method, you get
@@ -643,8 +679,8 @@ it completes:</p>
             <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> got </span><span class="si">%d</span><span class="s"> back&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">adder</span> <span class="o">=</span> <span class="n">Adder</span><span class="o">.</span><span class="n">start_proxy</span><span class="p">()</span>
-    <span class="n">bookkeeper</span> <span class="o">=</span> <span class="n">Bookkeeper</span><span class="o">.</span><span class="n">start_proxy</span><span class="p">(</span><span class="n">adder</span><span class="p">)</span>
+    <span class="n">adder</span> <span class="o">=</span> <span class="n">Adder</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="o">.</span><span class="n">proxy</span><span class="p">()</span>
+    <span class="n">bookkeeper</span> <span class="o">=</span> <span class="n">Bookkeeper</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">adder</span><span class="p">)</span><span class="o">.</span><span class="n">proxy</span><span class="p">()</span>
     <span class="n">bookkeeper</span><span class="o">.</span><span class="n">count_to</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
     <span class="n">ActorRegistry</span><span class="o">.</span><span class="n">stop_all</span><span class="p">()</span>
 </pre></div>
@@ -653,7 +689,10 @@ it completes:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to proxy</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to proxy</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -684,14 +723,19 @@ it completes:</p>
 <dl class="classmethod">
 <dt id="pykka.registry.ActorRegistry.get_by_class">
 <em class="property">classmethod </em><tt class="descname">get_by_class</tt><big>(</big><em>actor_class</em><big>)</big><a class="reference internal" href="_modules/pykka/registry/#ActorRegistry.get_by_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.registry.ActorRegistry.get_by_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get <tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt> for all running actors of the given class.</p>
+<dd><p>Get <tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt> for all running actors of the given class, or of
+any subclass of the given class.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_class</strong> (<a class="reference internal" href="#pykka.actor.Actor" title="pykka.actor.Actor"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.Actor</span></tt></a> subclass) &#8211; actor class</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>actor_class</strong> (<em>class</em>) &#8211; actor class, or any superclass of the actor</li>
+</ul>
+</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -706,9 +750,13 @@ name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_class_name</strong> (<em>string</em>) &#8211; actor class name</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>actor_class_name</strong> (<em>string</em>) &#8211; actor class name</li>
+</ul>
+</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -722,9 +770,13 @@ name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_urn</strong> (<em>string</em>) &#8211; actor URN</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>actor_urn</strong> (<em>string</em>) &#8211; actor URN</li>
+</ul>
+</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a> or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> if not found</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a> or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> if not found</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -740,7 +792,10 @@ name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to register</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to register</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -774,7 +829,10 @@ If blocking, a list of return values from
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to unregister</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to unregister</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -849,12 +907,12 @@ If blocking, a list of return values from
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.10 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>
