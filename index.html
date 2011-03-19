@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka &mdash; Pykka v0.10 documentation</title>
+    <title>Pykka &mdash; Pykka v0.11 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.10',
+        VERSION:     '0.11',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.10 documentation" href="#" /> 
+    <link rel="top" title="Pykka v0.11 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.10 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.11 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -50,8 +50,8 @@ by using the <a class="reference external" href="http://en.wikipedia.org/wiki/Ac
 <p>Pykka provides an actor API with two different implementations:</p>
 <ul class="simple">
 <li><strong>ThreadingActor</strong> is built on the Python Standard Library&#8217;s <cite>threading</cite> and
-<cite>multiprocessing</cite> modules, and has no dependencies outside Python itself. It
-plays well together with non-actor threads.</li>
+<cite>Queue</cite> modules, and has no dependencies outside Python itself. It plays well
+together with non-actor threads.</li>
 <li><strong>GeventActor</strong> is built on the <a class="reference external" href="http://www.gevent.org/">gevent</a> library.
 gevent is a coroutine-based Python networking library that uses greenlet to
 provide a high-level synchronous API on top of libevent event loop. It is
@@ -381,7 +381,7 @@ reserved for internal use in Pykka.</p>
 <dt id="pykka.actor.ThreadingActor">
 <em class="property">class </em><tt class="descclassname">pykka.actor.</tt><tt class="descname">ThreadingActor</tt><a class="reference internal" href="_modules/pykka/actor/#ThreadingActor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.ThreadingActor" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#pykka.actor.ThreadingActor" title="pykka.actor.ThreadingActor"><tt class="xref py py-class docutils literal"><span class="pre">ThreadingActor</span></tt></a> implements <a class="reference internal" href="#pykka.actor.Actor" title="pykka.actor.Actor"><tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt></a> using regular Python
-threads, via the <tt class="xref py py-mod docutils literal"><span class="pre">multiprocessing.dummy</span></tt> package.</p>
+threads.</p>
 <p>This implementation is slower than <a class="reference internal" href="#pykka.gevent.GeventActor" title="pykka.gevent.GeventActor"><tt class="xref py py-class docutils literal"><span class="pre">pykka.gevent.GeventActor</span></tt></a>, but
 can be used in a process with other threads that are not Pykka actors.</p>
 </dd></dl>
@@ -546,6 +546,17 @@ only block the first time the value is accessed.</p>
 </table>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="pykka.future.ThreadingFuture">
+<em class="property">class </em><tt class="descclassname">pykka.future.</tt><tt class="descname">ThreadingFuture</tt><a class="reference internal" href="_modules/pykka/future/#ThreadingFuture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.future.ThreadingFuture" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#pykka.future.ThreadingFuture" title="pykka.future.ThreadingFuture"><tt class="xref py py-class docutils literal"><span class="pre">ThreadingFuture</span></tt></a> implements <a class="reference internal" href="#pykka.future.Future" title="pykka.future.Future"><tt class="xref py py-class docutils literal"><span class="pre">Future</span></tt></a> for use with
+<a class="reference internal" href="#pykka.actor.ThreadingActor" title="pykka.actor.ThreadingActor"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ThreadingActor</span></tt></a>.</p>
+<p>The future is implemented using a <tt class="xref py py-class docutils literal"><span class="pre">Queue.Queue</span></tt>.</p>
+<p>The encapsulated value is a copy made with <tt class="xref py py-func docutils literal"><span class="pre">copy.deepcopy()</span></tt>, unless
+the encapsulated value is another <a class="reference internal" href="#pykka.future.ThreadingFuture" title="pykka.future.ThreadingFuture"><tt class="xref py py-class docutils literal"><span class="pre">ThreadingFuture</span></tt></a>, in which case
+the original future is encapsulated.</p>
 </dd></dl>
 
 <dl class="function">
@@ -869,7 +880,7 @@ If blocking, a list of return values from
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.10 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.11 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
