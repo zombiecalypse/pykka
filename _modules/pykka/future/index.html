@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.future &mdash; Pykka v0.11.1 documentation</title>
+    <title>pykka.future &mdash; Pykka v0.12 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.11.1',
+        VERSION:     '0.12',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.11.1 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.12 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.11.1 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -47,18 +47,16 @@
           <div class="body">
             
   <h1>Source code for pykka.future</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">copy</span> <span class="kn">as</span> <span class="nn">_copy</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="c"># Python 2.x</span>
-    <span class="kn">import</span> <span class="nn">Queue</span> <span class="kn">as</span> <span class="nn">queue</span>
+    <span class="kn">import</span> <span class="nn">Queue</span> <span class="kn">as</span> <span class="nn">_queue</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="c"># Python 3.x</span>
-    <span class="kn">import</span> <span class="nn">queue</span>  <span class="c"># pylint: disable = F0401</span>
+    <span class="kn">import</span> <span class="nn">queue</span> <span class="kn">as</span> <span class="nn">_queue</span>  <span class="c"># pylint: disable = F0401</span>
 
-
-<span class="k">class</span> <span class="nc">Timeout</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">pass</span>
+<span class="kn">from</span> <span class="nn">pykka</span> <span class="kn">import</span> <span class="n">Timeout</span> <span class="k">as</span> <span class="n">_Timeout</span>
 
 
 <div class="viewcode-block" id="Future"><a class="viewcode-back" href="../../../#pykka.future.Future">[docs]</a><span class="k">class</span> <span class="nc">Future</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -81,18 +79,17 @@
 <span class="sd">        If ``timeout`` is :class:`None`, as default, the method will block</span>
 <span class="sd">        until it gets a reply, potentially forever. If ``timeout`` is an</span>
 <span class="sd">        integer or float, the method will wait for a reply for ``timeout``</span>
-<span class="sd">        seconds, and then raise :exc:`Timeout`.</span>
+<span class="sd">        seconds, and then raise :exc:`pykka.Timeout`.</span>
 
 <span class="sd">        The encapsulated value can be retrieved multiple times. The future will</span>
 <span class="sd">        only block the first time the value is accessed.</span>
 
-<span class="sd">        :param block: whether to block while waiting for a reply</span>
-<span class="sd">        :type block: boolean</span>
-
 <span class="sd">        :param timeout: seconds to wait before timeout</span>
 <span class="sd">        :type timeout: float or :class:`None`</span>
 
-<span class="sd">        :return: encapsulated value</span>
+<span class="sd">        :raise: :exc:`pykka.Timeout` if timeout is reached</span>
+<span class="sd">        :raise: encapsulated value if it is an exception</span>
+<span class="sd">        :return: encapsulated value if it is not an exception</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </div>
@@ -129,7 +126,7 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ThreadingFuture</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="n">_queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_value_received</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="bp">None</span>
 
@@ -142,14 +139,14 @@
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span>  <span class="c"># pylint: disable = E0702</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span>
-        <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">Timeout</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> seconds&#39;</span> <span class="o">%</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">_queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_Timeout</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> seconds&#39;</span> <span class="o">%</span> <span class="n">timeout</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">ThreadingFuture</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">_copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
@@ -161,7 +158,7 @@
 <span class="sd">    Collect all values encapsulated in the list of futures.</span>
 
 <span class="sd">    If ``timeout`` is not :class:`None`, the method will wait for a reply for</span>
-<span class="sd">    ``timeout`` seconds, and then raise :exc:`pykka.future.Timeout`.</span>
+<span class="sd">    ``timeout`` seconds, and then raise :exc:`pykka.Timeout`.</span>
 
 <span class="sd">    :param futures: futures for the results to collect</span>
 <span class="sd">    :type futures: list of `pykka.future.Future`</span>
@@ -169,6 +166,7 @@
 <span class="sd">    :param timeout: seconds to wait before timeout</span>
 <span class="sd">    :type timeout: float or :class:`None`</span>
 
+<span class="sd">    :raise: :exc:`pykka.Timeout` if timeout is reached</span>
 <span class="sd">    :returns: list of results</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span> <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">]</span></div>
@@ -205,7 +203,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.11.1 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>

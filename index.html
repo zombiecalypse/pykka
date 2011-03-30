@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka &mdash; Pykka v0.11.1 documentation</title>
+    <title>Pykka &mdash; Pykka v0.12 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.11.1',
+        VERSION:     '0.12',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.11.1 documentation" href="#" /> 
+    <link rel="top" title="Pykka v0.12 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.11.1 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.12 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -94,10 +94,10 @@ to protect its own state.</li>
 actors.</p>
 <div class="section" id="plain-actors">
 <h3>Plain actors<a class="headerlink" href="#plain-actors" title="Permalink to this headline">¶</a></h3>
-<p>Plain actors get all incoming messages delivered to the <tt class="xref py py-meth docutils literal"><span class="pre">react()</span></tt> method.
-This method can decide what action is needed in response to the message. The
-messages are expected to be Python dictionaries, containing anything that can
-be serialized.</p>
+<p>Plain actors get all incoming messages delivered to the <tt class="xref py py-meth docutils literal"><span class="pre">on_receive()</span></tt>
+method. This method can decide what action is needed in response to the
+message. The messages are expected to be Python dictionaries, containing
+anything that can be serialized.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#! /usr/bin/env python</span>
 
 <span class="kn">from</span> <span class="nn">pykka.actor</span> <span class="kn">import</span> <span class="n">ThreadingActor</span>
@@ -106,7 +106,7 @@ be serialized.</p>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stored_messages</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="nf">react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">on_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;get_messages&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stored_messages</span>
         <span class="k">else</span><span class="p">:</span>
@@ -215,6 +215,35 @@ attribute is marked as traversable.</p>
 </div>
 </div>
 </div>
+<div class="section" id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
+<p>Pykka uses Python&#8217;s standard <tt class="xref py py-mod docutils literal"><span class="pre">logging</span></tt> module for logging debug statements
+and any unhandled exceptions in the actors. All log records emitted by Pykka
+are issued to the logger named &#8220;pykka&#8221;, or a sublogger of it.</p>
+<p>Out of the box, Pykka is set up with <tt class="xref py py-class docutils literal"><span class="pre">logging.NullHandler</span></tt> as the only
+log record handler. This is the recommended approach for logging in
+libraries, so that the application developer using the library will have full
+control over how the log records from the library will be exposed to the
+application&#8217;s users. In other words, if you want to see the log records from
+Pykka anywhere, you need to add a useful handler to the root logger or the
+logger named &#8220;pykka&#8221; to get any log output from Pykka. The defaults provided by
+<tt class="xref py py-meth docutils literal"><span class="pre">logging.basicConfig()</span></tt> is enough to get debug log statements out of
+Pykka:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If your application is already using <tt class="xref py py-mod docutils literal"><span class="pre">logging</span></tt>, and you want debug log
+output from your own application, but not from Pykka, you can ignore debug log
+messages from Pykka by increasing the threshold on the Pykka logger to &#8220;info&#8221;
+level or higher:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;pykka&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more details on how to use <tt class="xref py py-mod docutils literal"><span class="pre">logging</span></tt>, please refer to the Python
+standard library documentation.</p>
+</div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>Install Pykka&#8217;s dependencies:</p>
@@ -255,6 +284,18 @@ the full license text.</p>
 <dd><p>Returns Pykka&#8217;s version as a formatted string</p>
 </dd></dl>
 
+<dl class="exception">
+<dt id="pykka.ActorDeadError">
+<em class="property">exception </em><tt class="descclassname">pykka.</tt><tt class="descname">ActorDeadError</tt><a class="reference internal" href="_modules/pykka/#ActorDeadError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.ActorDeadError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception raised when trying to use a dead or unavailable actor.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pykka.Timeout">
+<em class="property">exception </em><tt class="descclassname">pykka.</tt><tt class="descname">Timeout</tt><a class="reference internal" href="_modules/pykka/#Timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.Timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception raised at future timeout.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-pykka.actor">
 <span id="pykka-actor"></span><h2>pykka.actor<a class="headerlink" href="#module-pykka.actor" title="Permalink to this headline">¶</a></h2>
@@ -275,13 +316,22 @@ arguments for your constructor.</li>
 
 <span class="k">class</span> <span class="nc">MyActor</span><span class="p">(</span><span class="n">ThreadingActor</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_arg</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="o">...</span> <span class="c"># my init code</span>
+        <span class="o">...</span> <span class="c"># My optional init code with access to start() arguments</span>
 
-    <span class="k">def</span> <span class="nf">react</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
-        <span class="o">...</span> <span class="c"># my react code for a plain actor</span>
+    <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">...</span> <span class="c"># My optional setup code in same context as on_receive()</span>
+
+    <span class="k">def</span> <span class="nf">on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">...</span> <span class="c"># My optional cleanup code in same context as on_receive()</span>
+
+    <span class="k">def</span> <span class="nf">on_failure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception_type</span><span class="p">,</span> <span class="n">exception_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="o">...</span> <span class="c"># My optional cleanup code in same context as on_receive()</span>
+
+    <span class="k">def</span> <span class="nf">on_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="o">...</span> <span class="c"># My optional message handling code for a plain actor</span>
 
     <span class="k">def</span> <span class="nf">a_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
-        <span class="o">...</span> <span class="c"># my regular method to be used through an ActorProxy</span>
+        <span class="o">...</span> <span class="c"># My regular method to be used through an ActorProxy</span>
 
 <span class="n">my_actor_ref</span> <span class="o">=</span> <span class="n">MyActor</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">my_arg</span><span class="o">=...</span><span class="p">)</span>
 <span class="n">my_actor_ref</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
@@ -302,7 +352,7 @@ safe manner.</p>
     Actor.__new__()
         superclass.__new__()
         superclass.__init__()
-        UUID assignment
+        URN assignment
         Inbox creation
         ActorRef creation
     Actor.__init__()        # Your code can run here
@@ -322,7 +372,7 @@ It may be used for looking up a specific actor using
 <dl class="attribute">
 <dt id="pykka.actor.Actor.actor_inbox">
 <tt class="descname">actor_inbox</tt><a class="headerlink" href="#pykka.actor.Actor.actor_inbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>The actors inbox. Use <a class="reference internal" href="#pykka.actor.ActorRef.send_one_way" title="pykka.actor.ActorRef.send_one_way"><tt class="xref py py-meth docutils literal"><span class="pre">ActorRef.send_one_way()</span></tt></a> and friends to put
+<dd><p>The actor&#8217;s inbox. Use <a class="reference internal" href="#pykka.actor.ActorRef.send_one_way" title="pykka.actor.ActorRef.send_one_way"><tt class="xref py py-meth docutils literal"><span class="pre">ActorRef.send_one_way()</span></tt></a> and friends to put
 messages in the inbox.</p>
 </dd></dl>
 
@@ -330,13 +380,6 @@ messages in the inbox.</p>
 <dt id="pykka.actor.Actor.actor_ref">
 <tt class="descname">actor_ref</tt><a class="headerlink" href="#pykka.actor.Actor.actor_ref" title="Permalink to this definition">¶</a></dt>
 <dd><p>The actor&#8217;s <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> instance.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pykka.actor.Actor.actor_runnable">
-<tt class="descname">actor_runnable</tt><a class="headerlink" href="#pykka.actor.Actor.actor_runnable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wether or not the actor should continue processing messages. Use
-<a class="reference internal" href="#pykka.actor.Actor.stop" title="pykka.actor.Actor.stop"><tt class="xref py py-meth docutils literal"><span class="pre">stop()</span></tt></a> to change it.</p>
 </dd></dl>
 
 <dl class="method">
@@ -348,8 +391,8 @@ before stopping. It may not be restarted.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pykka.actor.Actor.post_start">
-<tt class="descname">post_start</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.post_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.post_start" title="Permalink to this definition">¶</a></dt>
+<dt id="pykka.actor.Actor.on_start">
+<tt class="descname">on_start</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.on_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.on_start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hook for doing any setup that should be done <em>after</em> the actor is
 started, but <em>before</em> it starts processing messages.</p>
 <p>For <a class="reference internal" href="#pykka.actor.ThreadingActor" title="pykka.actor.ThreadingActor"><tt class="xref py py-class docutils literal"><span class="pre">ThreadingActor</span></tt></a>, this method is executed in the actor&#8217;s own
@@ -358,10 +401,32 @@ the actor.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pykka.actor.Actor.react">
-<tt class="descname">react</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.react"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.react" title="Permalink to this definition">¶</a></dt>
-<dd><p>May be implemented for the actor to handle non-proxy messages.</p>
-<p>Messages where the value of the &#8216;command&#8217; key matches &#8216;pykka_*&#8217; are
+<dt id="pykka.actor.Actor.on_stop">
+<tt class="descname">on_stop</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.on_stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.on_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for doing any cleanup that should be done <em>after</em> the actor has
+processed the last message, and <em>before</em> the actor stops.</p>
+<p>This hook is <em>not</em> called when the actor stops because of an unhandled
+exception. In that case, the <a class="reference internal" href="#pykka.actor.Actor.on_failure" title="pykka.actor.Actor.on_failure"><tt class="xref py py-meth docutils literal"><span class="pre">on_failure()</span></tt></a> hook is called instead.</p>
+<p>For <a class="reference internal" href="#pykka.actor.ThreadingActor" title="pykka.actor.ThreadingActor"><tt class="xref py py-class docutils literal"><span class="pre">ThreadingActor</span></tt></a> this method is executed in the actor&#8217;s own
+thread, immediately before the thread exits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.actor.Actor.on_failure">
+<tt class="descname">on_failure</tt><big>(</big><em>exception_type</em>, <em>exception_value</em>, <em>traceback</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.on_failure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.on_failure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for doing any cleanup <em>after</em> an unhandled exception is raised,
+and <em>before</em> the actor stops.</p>
+<p>For <a class="reference internal" href="#pykka.actor.ThreadingActor" title="pykka.actor.ThreadingActor"><tt class="xref py py-class docutils literal"><span class="pre">ThreadingActor</span></tt></a> this method is executed in the actor&#8217;s own
+thread, immediately before the thread exits.</p>
+<p>The method&#8217;s arguments are the relevant information from
+<tt class="xref py py-func docutils literal"><span class="pre">sys.exc_info()</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pykka.actor.Actor.on_receive">
+<tt class="descname">on_receive</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#Actor.on_receive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.Actor.on_receive" title="Permalink to this definition">¶</a></dt>
+<dd><p>May be implemented for the actor to handle regular non-proxy messages.</p>
+<p>Messages where the value of the &#8220;command&#8221; key matches &#8220;pykka_*&#8221; are
 reserved for internal use in Pykka.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -408,6 +473,23 @@ need to create <a class="reference internal" href="#pykka.actor.ActorRef" title=
 </dd></dl>
 
 <dl class="method">
+<dt id="pykka.actor.ActorRef.is_alive">
+<tt class="descname">is_alive</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/actor/#ActorRef.is_alive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.ActorRef.is_alive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if actor is alive.</p>
+<p>This is based on whether the actor is registered in the actor registry
+or not. The actor is not guaranteed to be alive and responding even
+though <a class="reference internal" href="#pykka.actor.ActorRef.is_alive" title="pykka.actor.ActorRef.is_alive"><tt class="xref py py-meth docutils literal"><span class="pre">is_alive()</span></tt></a> returns <tt class="xref py py-class xref docutils literal"><span class="pre">True</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">Returns <tt class="xref py py-class xref docutils literal"><span class="pre">True</span></tt> if actor is alive, <tt class="xref py py-class xref docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pykka.actor.ActorRef.send_one_way">
 <tt class="descname">send_one_way</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#ActorRef.send_one_way"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.ActorRef.send_one_way" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send message to actor without waiting for any response.</p>
@@ -418,6 +500,8 @@ block until a free slot is available.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>picklable dict</em>) &#8211; message to send</td>
+</tr>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</td>
 </tr>
 <tr class="field"><th class="field-name">Returns:</th><td class="field-body">nothing</td>
 </tr>
@@ -436,7 +520,7 @@ If <tt class="docutils literal"><span class="pre">block</span></tt> is <tt class
 default, the method will block until it gets a reply, potentially
 forever. If <tt class="docutils literal"><span class="pre">timeout</span></tt> is an integer or float, the method will wait
 for a reply for <tt class="docutils literal"><span class="pre">timeout</span></tt> seconds, and then raise
-<tt class="xref py py-exc docutils literal"><span class="pre">pykka.future.Timeout</span></tt>.</p>
+<a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -446,6 +530,12 @@ for a reply for <tt class="docutils literal"><span class="pre">timeout</span></t
 <li><strong>block</strong> (<em>boolean</em>) &#8211; whether to block while waiting for a reply</li>
 <li><strong>timeout</strong> (float or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; seconds to wait before timeout if blocking</li>
 </ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><p class="first"><a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a> if timeout is reached</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><p class="first"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</p>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pykka.future.Future" title="pykka.future.Future"><tt class="xref py py-class docutils literal"><span class="pre">pykka.future.Future</span></tt></a> or response</p>
@@ -459,7 +549,18 @@ for a reply for <tt class="docutils literal"><span class="pre">timeout</span></t
 <dt id="pykka.actor.ActorRef.stop">
 <tt class="descname">stop</tt><big>(</big><em>block=True</em>, <em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/actor/#ActorRef.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.ActorRef.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a message to the actor, asking it to stop.</p>
+<p>The actor will finish processing any messages already in its queue
+before stopping. It may not be restarted.</p>
 <p><tt class="docutils literal"><span class="pre">block</span></tt> and <tt class="docutils literal"><span class="pre">timeout</span></tt> works as for <a class="reference internal" href="#pykka.actor.ActorRef.send_request_reply" title="pykka.actor.ActorRef.send_request_reply"><tt class="xref py py-meth docutils literal"><span class="pre">send_request_reply()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><tt class="xref py py-class xref docutils literal"><span class="pre">True</span></tt> if actor is stopped. <tt class="xref py py-class xref docutils literal"><span class="pre">False</span></tt> if actor was
+already dead.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -467,14 +568,23 @@ for a reply for <tt class="docutils literal"><span class="pre">timeout</span></t
 <tt class="descname">proxy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pykka/actor/#ActorRef.proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.actor.ActorRef.proxy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wraps the <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">ActorRef</span></tt></a> in an <a class="reference internal" href="#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">pykka.proxy.ActorProxy</span></tt></a>.</p>
 <p>Using this method like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ref</span> <span class="o">=</span> <span class="n">AnActor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-<span class="n">proxy</span> <span class="o">=</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>is analogous to:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">proxy</span> <span class="o">=</span> <span class="n">AnActor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="o">.</span><span class="n">proxy</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>is analogous to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">proxy</span> <span class="o">=</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="n">AnActor</span><span class="o">.</span><span class="n">start</span><span class="p">())</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">pykka.proxy.ActorProxy</span></tt></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -498,21 +608,20 @@ returned.</p>
 <p>If <tt class="docutils literal"><span class="pre">timeout</span></tt> is <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>, as default, the method will block
 until it gets a reply, potentially forever. If <tt class="docutils literal"><span class="pre">timeout</span></tt> is an
 integer or float, the method will wait for a reply for <tt class="docutils literal"><span class="pre">timeout</span></tt>
-seconds, and then raise <tt class="xref py py-exc docutils literal"><span class="pre">Timeout</span></tt>.</p>
+seconds, and then raise <a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a>.</p>
 <p>The encapsulated value can be retrieved multiple times. The future will
 only block the first time the value is accessed.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>block</strong> (<em>boolean</em>) &#8211; whether to block while waiting for a reply</li>
-<li><strong>timeout</strong> (float or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; seconds to wait before timeout</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (float or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; seconds to wait before timeout</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">encapsulated value</p>
-</td>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a> if timeout is reached</td>
+</tr>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body">encapsulated value if it is an exception</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">encapsulated value if it is not an exception</td>
 </tr>
 </tbody>
 </table>
@@ -564,7 +673,7 @@ the original future is encapsulated.</p>
 <tt class="descclassname">pykka.future.</tt><tt class="descname">get_all</tt><big>(</big><em>futures</em>, <em>timeout=None</em><big>)</big><a class="reference internal" href="_modules/pykka/future/#get_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.future.get_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collect all values encapsulated in the list of futures.</p>
 <p>If <tt class="docutils literal"><span class="pre">timeout</span></tt> is not <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>, the method will wait for a reply for
-<tt class="docutils literal"><span class="pre">timeout</span></tt> seconds, and then raise <tt class="xref py py-exc docutils literal"><span class="pre">pykka.future.Timeout</span></tt>.</p>
+<tt class="docutils literal"><span class="pre">timeout</span></tt> seconds, and then raise <a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -573,6 +682,9 @@ the original future is encapsulated.</p>
 <li><strong>futures</strong> (list of <cite>pykka.future.Future</cite>) &#8211; futures for the results to collect</li>
 <li><strong>timeout</strong> (float or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; seconds to wait before timeout</li>
 </ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><p class="first"><a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a> if timeout is reached</p>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of results</p>
@@ -603,8 +715,9 @@ used directly, though it will couple your code with gevent.</p>
 <dl class="class">
 <dt id="pykka.gevent.GeventActor">
 <em class="property">class </em><tt class="descclassname">pykka.gevent.</tt><tt class="descname">GeventActor</tt><a class="reference internal" href="_modules/pykka/gevent/#GeventActor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.gevent.GeventActor" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#pykka.gevent.GeventActor" title="pykka.gevent.GeventActor"><tt class="xref py py-class docutils literal"><span class="pre">GeventActor</span></tt></a> implements <tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt> using the <a class="reference external" href="http://www.gevent.org/">gevent</a> library. gevent is a coroutine-based Python
-networking library that uses greenlet to provide a high-level
+<dd><p><a class="reference internal" href="#pykka.gevent.GeventActor" title="pykka.gevent.GeventActor"><tt class="xref py py-class docutils literal"><span class="pre">GeventActor</span></tt></a> implements <a class="reference internal" href="#pykka.actor.Actor" title="pykka.actor.Actor"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.Actor</span></tt></a> using the
+<a class="reference external" href="http://www.gevent.org/">gevent</a> library. gevent is a coroutine-based
+Python networking library that uses greenlet to provide a high-level
 synchronous API on top of libevent event loop.</p>
 <p>This is a very fast implementation, but it does not work in combination
 with other threads.</p>
@@ -684,6 +797,8 @@ it completes:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to proxy</td>
+</tr>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</td>
 </tr>
 </tbody>
 </table>
@@ -834,6 +949,7 @@ If blocking, a list of return values from
 </li>
 </ul>
 </li>
+<li><a class="reference internal" href="#logging">Logging</a></li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#license">License</a></li>
 </ul>
@@ -880,7 +996,7 @@ If blocking, a list of return values from
         <li class="right" >
           <a href="py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pykka v0.11.1 documentation</a> &raquo;</li> 
+        <li><a href="#">Pykka v0.12 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
