@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka API &mdash; Pykka v0.12.2 documentation</title>
+    <title>Pykka API &mdash; Pykka v0.12.3 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.12.2',
+        VERSION:     '0.12.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.2 documentation" href="../" />
+    <link rel="top" title="Pykka v0.12.3 documentation" href="../" />
     <link rel="next" title="Changes" href="../changes/" />
     <link rel="prev" title="Introduction" href="../introduction/" /> 
   </head>
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="../introduction/" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li><a href="../">Pykka v0.12.2 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -613,6 +613,12 @@ it completes:</p>
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="pykka.proxy.ActorProxy.actor_ref">
+<tt class="descname">actor_ref</tt><a class="headerlink" href="#pykka.proxy.ActorProxy.actor_ref" title="Permalink to this definition">¶</a></dt>
+<dd><p>The actor&#8217;s <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a> instance.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -623,6 +629,26 @@ it completes:</p>
 <em class="property">class </em><tt class="descclassname">pykka.registry.</tt><tt class="descname">ActorRegistry</tt><a class="reference internal" href="../_modules/pykka/registry/#ActorRegistry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.registry.ActorRegistry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registry which provides easy access to all running actors.</p>
 <p>Contains global state, but should be thread-safe.</p>
+<dl class="classmethod">
+<dt id="pykka.registry.ActorRegistry.broadcast">
+<em class="property">classmethod </em><tt class="descname">broadcast</tt><big>(</big><em>message</em>, <em>target_class=None</em><big>)</big><a class="reference internal" href="../_modules/pykka/registry/#ActorRegistry.broadcast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.registry.ActorRegistry.broadcast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast <tt class="docutils literal"><span class="pre">message</span></tt> to all actors of the specified <tt class="docutils literal"><span class="pre">target_class</span></tt>.</p>
+<p>If no <tt class="docutils literal"><span class="pre">target_class</span></tt> is specified, the message is broadcasted to all
+actors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>message</strong> (<em>picklable dict</em>) &#8211; the message to send</li>
+<li><strong>target_class</strong> (<em>class or class name</em>) &#8211; optional actor class to broadcast the message to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="classmethod">
 <dt id="pykka.registry.ActorRegistry.get_all">
 <em class="property">classmethod </em><tt class="descname">get_all</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pykka/registry/#ActorRegistry.get_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykka.registry.ActorRegistry.get_all" title="Permalink to this definition">¶</a></dt>
@@ -822,7 +848,7 @@ If blocking, a list of return values from
         <li class="right" >
           <a href="../introduction/" title="Introduction"
              >previous</a> |</li>
-        <li><a href="../">Pykka v0.12.2 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
 

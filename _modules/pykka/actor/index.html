@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.actor &mdash; Pykka v0.12.2 documentation</title>
+    <title>pykka.actor &mdash; Pykka v0.12.3 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.12.2',
+        VERSION:     '0.12.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.2 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.12.3 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.2 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -209,7 +209,6 @@
 <span class="sd">        :class:`ThreadingActor` expects this method to be named :meth:`run`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">on_start</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_runnable</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_runnable</span><span class="p">:</span>
             <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_inbox</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
@@ -372,6 +371,11 @@
 
     <span class="n">_superclass</span> <span class="o">=</span> <span class="n">_threading</span><span class="o">.</span><span class="n">Thread</span>
     <span class="n">_future_class</span> <span class="o">=</span> <span class="n">_ThreadingFuture</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">Actor</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;Thread&#39;</span><span class="p">,</span> <span class="s">&#39;PykkaActorThread&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
 
     <span class="k">def</span> <span class="nf">_new_actor_inbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
@@ -545,7 +549,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.2 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>

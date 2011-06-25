@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes &mdash; Pykka v0.12.2 documentation</title>
+    <title>Changes &mdash; Pykka v0.12.3 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.12.2',
+        VERSION:     '0.12.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.2 documentation" href="../" />
+    <link rel="top" title="Pykka v0.12.3 documentation" href="../" />
     <link rel="prev" title="Pykka API" href="../api/" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="../api/" title="Pykka API"
              accesskey="P">previous</a> |</li>
-        <li><a href="../">Pykka v0.12.2 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -49,6 +49,34 @@
             
   <div class="section" id="changes">
 <h1>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="v0-12-3-2011-06-25">
+<h2>v0.12.3 (2011-06-25)<a class="headerlink" href="#v0-12-3-2011-06-25" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>If an actor that was stopped from <a class="reference internal" href="../api/#pykka.actor.Actor.on_start" title="pykka.actor.Actor.on_start"><tt class="xref py py-meth docutils literal"><span class="pre">pykka.actor.Actor.on_start()</span></tt></a>, it
+would unregister properly, but start the receive loop and forever block on
+receiving incoming messages that would never arrive. This left the thread
+alive and isolated, ultimately blocking clean shutdown of the program. The
+fix ensures that the receive loop is never executed if the actor is stopped
+before the receive loop is started.</li>
+<li>Set the thread name of any <a class="reference internal" href="../api/#pykka.actor.ThreadingActor" title="pykka.actor.ThreadingActor"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ThreadingActor</span></tt></a> to
+<tt class="docutils literal"><span class="pre">PykkaActorThread-N</span></tt> instead of the default <tt class="docutils literal"><span class="pre">Thread-N</span></tt>. This eases
+debugging by clearly labeling actor threads in e.g. the output of
+<tt class="xref py py-func docutils literal"><span class="pre">threading.enumerate()</span></tt>.</li>
+<li>Add utility method <a class="reference internal" href="../api/#pykka.registry.ActorRegistry.broadcast" title="pykka.registry.ActorRegistry.broadcast"><tt class="xref py py-meth docutils literal"><span class="pre">pykka.registry.ActorRegistry.broadcast()</span></tt></a> which
+broadcasts a message to all registered actors or to a given class of
+registred actors. (Fixes: <a class="reference external" href="http://github.com/jodal/pykka/issues/7">GH-7</a>)</li>
+<li>Allow multiple calls to <a class="reference internal" href="../api/#pykka.registry.ActorRegistry.unregister" title="pykka.registry.ActorRegistry.unregister"><tt class="xref py py-meth docutils literal"><span class="pre">pykka.registry.ActorRegistry.unregister()</span></tt></a>
+with the same <a class="reference internal" href="../api/#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a> as argument without throwing a
+<tt class="xref py py-exc docutils literal"><span class="pre">ValueError</span></tt>. (Fixes: <a class="reference external" href="http://github.com/jodal/pykka/issues/5">GH-5</a>)</li>
+<li>Make the <a class="reference internal" href="../api/#pykka.proxy.ActorProxy" title="pykka.proxy.ActorProxy"><tt class="xref py py-class docutils literal"><span class="pre">pykka.proxy.ActorProxy</span></tt></a>&#8216;s reference to its
+<a class="reference internal" href="../api/#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a> public as
+<a class="reference internal" href="../api/#pykka.proxy.ActorProxy.actor_ref" title="pykka.proxy.ActorProxy.actor_ref"><tt class="xref py py-attr docutils literal"><span class="pre">pykka.proxy.ActorProxy.actor_ref</span></tt></a>. The <tt class="docutils literal"><span class="pre">ActorRef</span></tt> instance was
+already exposed as a public field by the actor itself using the same name,
+but making it public directly on the proxy makes it possible to do e.g.
+<tt class="docutils literal"><span class="pre">proxy.actor_ref.is_alive()</span></tt> without waiting for a potentially dead actor
+to return an <tt class="docutils literal"><span class="pre">ActorRef</span></tt> instance you can use. (Fixes: <a class="reference external" href="http://github.com/jodal/pykka/issues/3">GH-3</a>)</li>
+</ul>
+</div>
 <div class="section" id="v0-12-2-2011-05-05">
 <h2>v0.12.2 (2011-05-05)<a class="headerlink" href="#v0-12-2-2011-05-05" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -83,6 +111,7 @@ maintained and we will strive for backwards compatability.</li>
   <h3><a href="../">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changes</a><ul>
+<li><a class="reference internal" href="#v0-12-3-2011-06-25">v0.12.3 (2011-06-25)</a></li>
 <li><a class="reference internal" href="#v0-12-2-2011-05-05">v0.12.2 (2011-05-05)</a></li>
 <li><a class="reference internal" href="#v0-12-1-2011-04-25">v0.12.1 (2011-04-25)</a></li>
 <li><a class="reference internal" href="#v0-12-2011-03-30">v0.12 (2011-03-30)</a></li>
@@ -127,7 +156,7 @@ maintained and we will strive for backwards compatability.</li>
         <li class="right" >
           <a href="../api/" title="Pykka API"
              >previous</a> |</li>
-        <li><a href="../">Pykka v0.12.2 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
 

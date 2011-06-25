@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.proxy &mdash; Pykka v0.12.2 documentation</title>
+    <title>pykka.proxy &mdash; Pykka v0.12.3 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.12.2',
+        VERSION:     '0.12.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.2 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.12.3 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.2 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -98,19 +98,22 @@
 <span class="sd">    :raise: :exc:`pykka.ActorDeadError` if actor is not available</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c">#: The actor&#39;s :class:`pykka.actor.ActorRef` instance.</span>
+    <span class="n">actor_ref</span> <span class="o">=</span> <span class="bp">None</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actor_ref</span><span class="p">,</span> <span class="n">attr_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">actor_ref</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
             <span class="k">raise</span> <span class="n">_ActorDeadError</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> not found&#39;</span> <span class="o">%</span> <span class="n">actor_ref</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span> <span class="o">=</span> <span class="n">actor_ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span> <span class="o">=</span> <span class="n">actor_ref</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_attr_path</span> <span class="o">=</span> <span class="n">attr_path</span> <span class="ow">or</span> <span class="nb">tuple</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_known_attrs</span> <span class="o">=</span> <span class="bp">None</span>
 
     <span class="k">def</span> <span class="nf">_update_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_known_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_known_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span>
             <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;pykka_get_attributes&#39;</span><span class="p">})</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s">&#39;&lt;ActorProxy for </span><span class="si">%s</span><span class="s">, attr_path=</span><span class="si">%s</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span><span class="p">,</span>
+        <span class="k">return</span> <span class="s">&#39;&lt;ActorProxy for </span><span class="si">%s</span><span class="s">, attr_path=</span><span class="si">%s</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_attr_path</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -132,15 +135,15 @@
         <span class="k">if</span> <span class="n">attr_info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> has no attribute &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">attr_info</span><span class="p">[</span><span class="s">&#39;callable&#39;</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="n">_CallableProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span><span class="p">,</span> <span class="n">attr_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_CallableProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="p">,</span> <span class="n">attr_path</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">attr_info</span><span class="p">[</span><span class="s">&#39;traversable&#39;</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span><span class="p">,</span> <span class="n">attr_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ActorProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="p">,</span> <span class="n">attr_path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">message</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="s">&#39;pykka_getattr&#39;</span><span class="p">,</span>
                 <span class="s">&#39;attr_path&#39;</span><span class="p">:</span> <span class="n">attr_path</span><span class="p">,</span>
             <span class="p">}</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -148,7 +151,7 @@
 
 <span class="sd">        Blocks until the field is set to check if any exceptions was raised.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;actor_ref&#39;</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ActorProxy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="n">attr_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attr_path</span> <span class="o">+</span> <span class="p">(</span><span class="n">name</span><span class="p">,)</span>
         <span class="n">message</span> <span class="o">=</span> <span class="p">{</span>
@@ -156,13 +159,13 @@
             <span class="s">&#39;attr_path&#39;</span><span class="p">:</span> <span class="n">attr_path</span><span class="p">,</span>
             <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
 </div>
 <span class="k">class</span> <span class="nc">_CallableProxy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Internal helper class for proxying callables.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">attr_path</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span> <span class="o">=</span> <span class="n">ref</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_attr_path</span> <span class="o">=</span> <span class="n">attr_path</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -172,7 +175,7 @@
             <span class="s">&#39;args&#39;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>
             <span class="s">&#39;kwargs&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_ref</span><span class="o">.</span><span class="n">send_request_reply</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -206,7 +209,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.2 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>

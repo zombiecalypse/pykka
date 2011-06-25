@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.registry &mdash; Pykka v0.12.2 documentation</title>
+    <title>pykka.registry &mdash; Pykka v0.12.3 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.12.2',
+        VERSION:     '0.12.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.2 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.12.3 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.2 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -50,6 +50,14 @@
 <span class="kn">import</span> <span class="nn">logging</span> <span class="kn">as</span> <span class="nn">_logging</span>
 <span class="kn">import</span> <span class="nn">threading</span> <span class="kn">as</span> <span class="nn">_threading</span>
 
+<span class="c"># pylint: disable = W0622</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="nb">basestring</span>
+<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+    <span class="c"># Python 3</span>
+    <span class="nb">basestring</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="c"># pylint: enable = W0622</span>
+
 <span class="n">_logger</span> <span class="o">=</span> <span class="n">_logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;pykka&#39;</span><span class="p">)</span>
 
 
@@ -63,6 +71,29 @@
     <span class="n">_actor_refs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">_actor_refs_lock</span> <span class="o">=</span> <span class="n">_threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
 
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ActorRegistry.broadcast"><a class="viewcode-back" href="../../../api/#pykka.registry.ActorRegistry.broadcast">[docs]</a>    <span class="k">def</span> <span class="nf">broadcast</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">target_class</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Broadcast ``message`` to all actors of the specified ``target_class``.</span>
+
+<span class="sd">        If no ``target_class`` is specified, the message is broadcasted to all</span>
+<span class="sd">        actors.</span>
+
+<span class="sd">        :param message: the message to send</span>
+<span class="sd">        :type message: picklable dict</span>
+
+<span class="sd">        :param target_class: optional actor class to broadcast the message to</span>
+<span class="sd">        :type target_class: class or class name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_class</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">get_by_class_name</span><span class="p">(</span><span class="n">target_class</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">target_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">get_by_class</span><span class="p">(</span><span class="n">target_class</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+            <span class="n">ref</span><span class="o">.</span><span class="n">send_one_way</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</div>
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="ActorRegistry.get_all"><a class="viewcode-back" href="../../../api/#pykka.registry.ActorRegistry.get_all">[docs]</a>    <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -159,9 +190,16 @@
 <span class="sd">        :param actor_ref: reference to the actor to unregister</span>
 <span class="sd">        :type actor_ref: :class:`pykka.actor.ActorRef`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">removed</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">with</span> <span class="n">cls</span><span class="o">.</span><span class="n">_actor_refs_lock</span><span class="p">:</span>
-            <span class="n">cls</span><span class="o">.</span><span class="n">_actor_refs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">actor_ref</span><span class="p">)</span>
-        <span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Unregistered </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">actor_ref</span><span class="p">)</span></div></div>
+            <span class="k">if</span> <span class="n">actor_ref</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">_actor_refs</span><span class="p">:</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">_actor_refs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">actor_ref</span><span class="p">)</span>
+                <span class="n">removed</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">removed</span><span class="p">:</span>
+            <span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Unregistered </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">actor_ref</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Unregistered </span><span class="si">%s</span><span class="s"> (not found in registry)&#39;</span><span class="p">,</span>
+                <span class="n">actor_ref</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -195,7 +233,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.2 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>
