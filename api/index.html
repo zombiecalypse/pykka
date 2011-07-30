@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pykka API &mdash; Pykka v0.12.3 documentation</title>
+    <title>Pykka API &mdash; Pykka v0.12.4 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.12.3',
+        VERSION:     '0.12.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.3 documentation" href="../" />
+    <link rel="top" title="Pykka v0.12.4 documentation" href="../" />
     <link rel="next" title="Changes" href="../changes/" />
     <link rel="prev" title="Introduction" href="../introduction/" /> 
   </head>
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="../introduction/" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -215,13 +215,9 @@ reserved for internal use in Pykka.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>message</strong> (<em>picklable dict</em>) &#8211; the message to handle</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>picklable dict</em>) &#8211; the message to handle</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">anything that should be sent as a reply to the sender</p>
-</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">anything that should be sent as a reply to the sender</td>
 </tr>
 </tbody>
 </table>
@@ -249,10 +245,7 @@ need to create <a class="reference internal" href="#pykka.actor.ActorRef" title=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>actor</strong> (<a class="reference internal" href="#pykka.actor.Actor" title="pykka.actor.Actor"><tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt></a>) &#8211; the actor to wrap</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor</strong> (<a class="reference internal" href="#pykka.actor.Actor" title="pykka.actor.Actor"><tt class="xref py py-class docutils literal"><span class="pre">Actor</span></tt></a>) &#8211; the actor to wrap</td>
 </tr>
 </tbody>
 </table>
@@ -289,16 +282,11 @@ block until a free slot is available.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>message</strong> (<em>picklable dict</em>) &#8211; message to send</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>picklable dict</em>) &#8211; message to send</td>
 </tr>
-<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><p class="first"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</p>
-</td>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">nothing</p>
-</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">nothing</td>
 </tr>
 </tbody>
 </table>
@@ -410,19 +398,13 @@ only block the first time the value is accessed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>timeout</strong> (float or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; seconds to wait before timeout</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (float or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; seconds to wait before timeout</td>
 </tr>
-<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><p class="first"><a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a> if timeout is reached</p>
-</td>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference internal" href="#pykka.Timeout" title="pykka.Timeout"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.Timeout</span></tt></a> if timeout is reached</td>
 </tr>
-<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><p class="first">encapsulated value if it is an exception</p>
-</td>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body">encapsulated value if it is an exception</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">encapsulated value if it is not an exception</p>
-</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">encapsulated value if it is not an exception</td>
 </tr>
 </tbody>
 </table>
@@ -436,10 +418,7 @@ only block the first time the value is accessed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>value</strong> (any picklable object or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; the encapsulated value or nothing</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (any picklable object or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt>) &#8211; the encapsulated value or nothing</td>
 </tr>
 </tbody>
 </table>
@@ -453,10 +432,7 @@ only block the first time the value is accessed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>exception</strong> (<em>exception</em>) &#8211; the encapsulated exception</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>exception</strong> (<em>exception</em>) &#8211; the encapsulated exception</td>
 </tr>
 </tbody>
 </table>
@@ -603,13 +579,9 @@ it completes:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to proxy</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to proxy</td>
 </tr>
-<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</p>
-</td>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference internal" href="#pykka.ActorDeadError" title="pykka.ActorDeadError"><tt class="xref py py-exc docutils literal"><span class="pre">pykka.ActorDeadError</span></tt></a> if actor is not available</td>
 </tr>
 </tbody>
 </table>
@@ -672,13 +644,9 @@ any subclass of the given class.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>actor_class</strong> (<em>class</em>) &#8211; actor class, or any superclass of the actor</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_class</strong> (<em>class</em>) &#8211; actor class, or any superclass of the actor</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></p>
-</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></td>
 </tr>
 </tbody>
 </table>
@@ -693,13 +661,9 @@ name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>actor_class_name</strong> (<em>string</em>) &#8211; actor class name</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_class_name</strong> (<em>string</em>) &#8211; actor class name</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></p>
-</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list of <a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a></td>
 </tr>
 </tbody>
 </table>
@@ -713,13 +677,9 @@ name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>actor_urn</strong> (<em>string</em>) &#8211; actor URN</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_urn</strong> (<em>string</em>) &#8211; actor URN</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a> or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> if not found</p>
-</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a> or <tt class="xref py py-class xref docutils literal"><span class="pre">None</span></tt> if not found</td>
 </tr>
 </tbody>
 </table>
@@ -735,10 +695,7 @@ name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to register</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to register</td>
 </tr>
 </tbody>
 </table>
@@ -750,6 +707,15 @@ name.</p>
 <dd><p>Stop all running actors.</p>
 <p><tt class="docutils literal"><span class="pre">block</span></tt> and <tt class="docutils literal"><span class="pre">timeout</span></tt> works as for
 <a class="reference internal" href="#pykka.actor.ActorRef.stop" title="pykka.actor.ActorRef.stop"><tt class="xref py py-meth docutils literal"><span class="pre">pykka.actor.ActorRef.stop()</span></tt></a>.</p>
+<p>If <tt class="docutils literal"><span class="pre">block</span></tt> is <tt class="xref py py-class xref docutils literal"><span class="pre">True</span></tt>, the actors are guaranteed to be stopped
+in the reverse of the order they were started in. This is helpful if
+you have simple dependencies in between your actors, where it is
+sufficient to shut down actors in a LIFO manner: last started, first
+stopped.</p>
+<p>If you have more complex dependencies in between your actors, you
+should take care to shut them down in the required order yourself, e.g.
+by stopping dependees from a dependency&#8217;s
+<a class="reference internal" href="#pykka.actor.Actor.on_stop" title="pykka.actor.Actor.on_stop"><tt class="xref py py-meth docutils literal"><span class="pre">pykka.actor.Actor.on_stop()</span></tt></a> method.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -772,10 +738,7 @@ If blocking, a list of return values from
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to unregister</li>
-</ul>
-</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_ref</strong> (<a class="reference internal" href="#pykka.actor.ActorRef" title="pykka.actor.ActorRef"><tt class="xref py py-class docutils literal"><span class="pre">pykka.actor.ActorRef</span></tt></a>) &#8211; reference to the actor to unregister</td>
 </tr>
 </tbody>
 </table>
@@ -848,13 +811,13 @@ If blocking, a list of return values from
         <li class="right" >
           <a href="../introduction/" title="Introduction"
              >previous</a> |</li>
-        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
 <script type="text/javascript">
   var _gaq = _gaq || [];

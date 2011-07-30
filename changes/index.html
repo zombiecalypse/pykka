@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes &mdash; Pykka v0.12.3 documentation</title>
+    <title>Changes &mdash; Pykka v0.12.4 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.12.3',
+        VERSION:     '0.12.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.3 documentation" href="../" />
+    <link rel="top" title="Pykka v0.12.4 documentation" href="../" />
     <link rel="prev" title="Pykka API" href="../api/" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="../api/" title="Pykka API"
              accesskey="P">previous</a> |</li>
-        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -49,6 +49,17 @@
             
   <div class="section" id="changes">
 <h1>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="v0-12-4-2011-07-30">
+<h2>v0.12.4 (2011-07-30)<a class="headerlink" href="#v0-12-4-2011-07-30" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Change and document order in which
+<a class="reference internal" href="../api/#pykka.registry.ActorRegistry.stop_all" title="pykka.registry.ActorRegistry.stop_all"><tt class="xref py py-meth docutils literal"><span class="pre">pykka.registry.ActorRegistry.stop_all()</span></tt></a> stops actors. The new order is
+the reverse of the order the actors were started in. This should make
+<tt class="docutils literal"><span class="pre">stop_all</span></tt> work for programs with simple dependency graphs in between the
+actors. For applications with more complex dependency graphs, the developer
+still needs to pay attention to the shutdown sequence. (Fixes: <a class="reference external" href="http://github.com/jodal/pykka/issues/8">GH-8</a>)</li>
+</ul>
+</div>
 <div class="section" id="v0-12-3-2011-06-25">
 <h2>v0.12.3 (2011-06-25)<a class="headerlink" href="#v0-12-3-2011-06-25" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -111,6 +122,7 @@ maintained and we will strive for backwards compatability.</li>
   <h3><a href="../">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changes</a><ul>
+<li><a class="reference internal" href="#v0-12-4-2011-07-30">v0.12.4 (2011-07-30)</a></li>
 <li><a class="reference internal" href="#v0-12-3-2011-06-25">v0.12.3 (2011-06-25)</a></li>
 <li><a class="reference internal" href="#v0-12-2-2011-05-05">v0.12.2 (2011-05-05)</a></li>
 <li><a class="reference internal" href="#v0-12-1-2011-04-25">v0.12.1 (2011-04-25)</a></li>
@@ -156,13 +168,13 @@ maintained and we will strive for backwards compatability.</li>
         <li class="right" >
           <a href="../api/" title="Pykka API"
              >previous</a> |</li>
-        <li><a href="../">Pykka v0.12.3 documentation</a> &raquo;</li> 
+        <li><a href="../">Pykka v0.12.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
 <script type="text/javascript">
   var _gaq = _gaq || [];

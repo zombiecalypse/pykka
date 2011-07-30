@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pykka.registry &mdash; Pykka v0.12.3 documentation</title>
+    <title>pykka.registry &mdash; Pykka v0.12.4 documentation</title>
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.12.3',
+        VERSION:     '0.12.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Pykka v0.12.3 documentation" href="../../../" />
+    <link rel="top" title="Pykka v0.12.4 documentation" href="../../../" />
     <link rel="up" title="pykka" href="../" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.4 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" accesskey="U">pykka</a> &raquo;</li> 
       </ul>
@@ -173,11 +173,22 @@
 <span class="sd">        ``block`` and ``timeout`` works as for</span>
 <span class="sd">        :meth:`pykka.actor.ActorRef.stop`.</span>
 
+<span class="sd">        If ``block`` is :class:`True`, the actors are guaranteed to be stopped</span>
+<span class="sd">        in the reverse of the order they were started in. This is helpful if</span>
+<span class="sd">        you have simple dependencies in between your actors, where it is</span>
+<span class="sd">        sufficient to shut down actors in a LIFO manner: last started, first</span>
+<span class="sd">        stopped.</span>
+
+<span class="sd">        If you have more complex dependencies in between your actors, you</span>
+<span class="sd">        should take care to shut them down in the required order yourself, e.g.</span>
+<span class="sd">        by stopping dependees from a dependency&#39;s</span>
+<span class="sd">        :meth:`pykka.actor.Actor.on_stop` method.</span>
+
 <span class="sd">        :returns: If not blocking, a list with a future for each stop action.</span>
 <span class="sd">            If blocking, a list of return values from</span>
 <span class="sd">            :meth:`pykka.actor.ActorRef.stop`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">ref</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span> <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">get_all</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">ref</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span> <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">get_all</span><span class="p">())]</span>
 </div>
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="ActorRegistry.unregister"><a class="viewcode-back" href="../../../api/#pykka.registry.ActorRegistry.unregister">[docs]</a>    <span class="k">def</span> <span class="nf">unregister</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">actor_ref</span><span class="p">):</span>
@@ -233,7 +244,7 @@
         <li class="right" >
           <a href="../../../py-modindex/" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../">Pykka v0.12.3 documentation</a> &raquo;</li>
+        <li><a href="../../../">Pykka v0.12.4 documentation</a> &raquo;</li>
           <li><a href="../../" >Module code</a> &raquo;</li>
           <li><a href="../" >pykka</a> &raquo;</li> 
       </ul>
@@ -241,7 +252,7 @@
 
     <div class="footer">
         &copy; Copyright 2010-2011, Stein Magnus Jodal.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
 <script type="text/javascript">
   var _gaq = _gaq || [];
