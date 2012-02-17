@@ -3,7 +3,6 @@ import logging as _logging
 import sys as _sys
 import threading as _threading
 import uuid as _uuid
-import types as _types
 
 try:
     # Python 2.x
@@ -103,6 +102,9 @@ class Actor(object):
     #: The actor's :class:`ActorRef` instance.
     actor_ref = None
 
+    #: Allows the actor to send themselves a message.
+    as_message = None
+
     #: Wether or not the actor should continue processing messages. Use
     #: :meth:`stop` to change it.
     _actor_runnable = True
@@ -115,6 +117,7 @@ class Actor(object):
         obj.actor_inbox = obj._new_actor_inbox()
         # pylint: enable = W0212
         obj.actor_ref = ActorRef(obj)
+        obj.as_message = _AsMessage(obj)
         return obj
 
     # pylint: disable = W0231
@@ -162,34 +165,28 @@ class Actor(object):
         """
         self.on_start()
         while self._actor_runnable:
-            message = self.actor_inbox.get()
             try:
-                if 'continuation' in message:
-                    try:
-                        next(message['continuation'])
-                        self.actor_inbox.put(message)
-                    except StopIteration:
-                        pass
-                else:
+                message = self.actor_inbox.get(False)
+                _logger.debug('Actor {} got message {}'.format(self, message))
+                try:
                     response = self._handle_receive(message)
-                    if isinstance(response, _types.GeneratorType):
-                        message['continuation'] = response
-                        self.actor_inbox.put(message)
-                    elif 'reply_to' in message:
+                    if 'reply_to' in message:
                         message['reply_to'].set(response)
-            except Exception as exception:
-                if 'reply_to' in message:
-                    _logger.debug('Exception returned from %s to caller:' %
-                        self, exc_info=_sys.exc_info())
-                    message['reply_to'].set_exception(exception)
-                else:
-                    self._handle_failure(*_sys.exc_info())
-            except BaseException as exception:
-                exception_value = _sys.exc_info()[1]
-                _logger.debug('%s in %s. Stopping all actors.' %
-                    (repr(exception_value), self))
-                self.stop()
-                _ActorRegistry.stop_all()
+                except Exception as exception:
+                    if 'reply_to' in message:
+                        _logger.debug('Exception returned from %s to caller:' %
+                            self, exc_info=_sys.exc_info())
+                        message['reply_to'].set_exception(exception)
+                    else:
+                        self._handle_failure(*_sys.exc_info())
+                except BaseException as exception:
+                    exception_value = _sys.exc_info()[1]
+                    _logger.debug('%s in %s. Stopping all actors.' %
+                        (repr(exception_value), self))
+                    self.stop()
+                    _ActorRegistry.stop_all()
+            except _queue.Empty:
+                pass
     # pylint: enable = W0703
 
     def on_start(self):
@@ -478,3 +475,17 @@ class ActorRef(object):
         :return: :class:`pykka.proxy.ActorProxy`
         """
         return _ActorProxy(self)
+
+class _AsMessage(object):
+    def __init__(self, actor):
+        self.__actor = actor
+    def __call__(self, mesg):
+        self.__actor.actor_ref.send_one_way(mesg)
+    def __getattr__(self, name):
+        def call(*args, **kwargs):
+            self(dict(
+                command = 'pykka_call',
+                attr_path = (name,),
+                args = args,
+                kwargs = kwargs))
+        return call
