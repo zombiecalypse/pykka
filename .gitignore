@@ -3,6 +3,7 @@
 *.swp
 .coverage
 .tox
+.vimproject
 MANIFEST
 build/
 cover

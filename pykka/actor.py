@@ -3,6 +3,7 @@ import logging as _logging
 import sys as _sys
 import threading as _threading
 import uuid as _uuid
+import types as _types
 
 try:
     # Python 2.x
@@ -163,9 +164,19 @@ class Actor(object):
         while self._actor_runnable:
             message = self.actor_inbox.get()
             try:
-                response = self._handle_receive(message)
-                if 'reply_to' in message:
-                    message['reply_to'].set(response)
+                if 'continuation' in message:
+                    try:
+                        next(message['continuation'])
+                        self.actor_inbox.put(message)
+                    except StopIteration:
+                        pass
+                else:
+                    response = self._handle_receive(message)
+                    if isinstance(response, _types.GeneratorType):
+                        message['continuation'] = response
+                        self.actor_inbox.put(message)
+                    elif 'reply_to' in message:
+                        message['reply_to'].set(response)
             except Exception as exception:
                 if 'reply_to' in message:
                     _logger.debug('Exception returned from %s to caller:' %
